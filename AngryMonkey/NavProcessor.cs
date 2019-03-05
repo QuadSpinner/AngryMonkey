@@ -25,7 +25,7 @@ namespace AngryMonkey
         {
             string name = SanitizeFilename(md);
 
-            var n = new NavItem(tt.ToTitleCase(name.Replace("-", " ")), md);
+            NavItem n = new NavItem(tt.ToTitleCase(name.Replace("-", " ")), md);
 
             string[] lines = File.ReadAllLines(md);
 
@@ -47,7 +47,7 @@ namespace AngryMonkey
                 }
             }
 
-            n.Link = name + ".html";
+            // n.Link = name + ".html";
 
             return n;
         }

@@ -85,7 +85,17 @@ namespace AngryMonkey
             html = html.Replace("<!--REPLACE--BREADCRUMBS-->", bread.ToString());
             try
             {
-                File.WriteAllText(RootPath + dst + name + ".html", minifier.Minify(html).MinifiedContent);
+                string subpath = Path.GetDirectoryName(md.Replace(RootPath, RootPath + dst)).Replace("source\\", "");
+                if (!subpath.EndsWith("\\"))
+                    subpath = subpath + "\\";
+
+                subpath = ReplaceNumbers(subpath);
+
+                subpath = Nav.tt.ToTitleCase(subpath);
+
+                Directory.CreateDirectory(subpath);
+
+                File.WriteAllText(subpath + name + ".html", minifier.Minify(html).MinifiedContent);
             }
             catch (IOException)
             {
@@ -93,6 +103,21 @@ namespace AngryMonkey
             }
 
             //Console.Write(".");
+        }
+
+        private static string ReplaceNumbers(string subpath)
+        {
+            for (int i = 0; i < 10; i++)
+            {
+                subpath = subpath.Replace($"0{i}-", "");
+            }
+
+            for (int i = 10; i < 99; i++)
+            {
+                subpath = subpath.Replace($"0{i}-", "");
+            }
+
+            return subpath; 
         }
 
         private static string ProcessLinks(string s)

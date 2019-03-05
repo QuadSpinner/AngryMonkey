@@ -13,7 +13,7 @@ namespace AngryMonkey
             }
 
             if (!root.EndsWith("\\"))
-                root = root + "\\";
+                root = $"{root}\\";
 
             Documenter doc = new Documenter
             {

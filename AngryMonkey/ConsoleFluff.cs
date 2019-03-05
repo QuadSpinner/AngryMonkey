@@ -31,7 +31,8 @@ namespace AngryMonkey
             Console.Write(".", purple);
             Console.Write(".", red);
             Console.Write(".", gray);
-
+            Console.WindowHeight = Math.Min(40, Console.LargestWindowHeight);
+            Console.WindowWidth = Math.Min(100, Console.LargestWindowHeight);
             Console.Clear();
 
             DrawTitle(Title, gray);

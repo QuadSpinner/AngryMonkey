@@ -16,14 +16,15 @@ namespace AngryMonkey
         {
             C.SetConsoleAppearance();
 
-            C.WriteLine(
-                "          __\r\n     w  c(..)o   (\r\n      \\__(-)    __)\r\n          /\\   (\r\n         /(_)___)\r\n         w /|\r\n          | \\\r\n         m  m", C.gray);
+            C.WriteLine("          __\r\n     w  c(..)o   (\r\n      \\__(-)    __)\r\n          /\\   (\r\n         /(_)___)\r\n         w /|\r\n          | \\\r\n         m  m", C.gray);
 
             if (Hives == null || Hives.Count == 0)
             {
                 if (File.Exists(RootPath + "\\hives.json"))
                 {
                     Hives = JsonConvert.DeserializeObject<List<Hive>>(File.ReadAllText(RootPath + "\\hives.json"));
+                    C.Write("\nROOT: ", C.gray);
+                    C.WriteLine(RootPath, C.gold);
                 }
                 else
                 {
@@ -101,7 +102,7 @@ namespace AngryMonkey
 
             foreach (Hive hive in Hives)
             {
-                C.Write($"Processing {hive.Path.ToUpper()}...", C.gray);
+                C.Write($"Processing {hive.Path}...", C.gray);
                 Processor p = new Processor(RootPath)
                 {
                     src = @"source\" + hive.Path,
