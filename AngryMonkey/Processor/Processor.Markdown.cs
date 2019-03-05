@@ -4,18 +4,20 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Markdig;
+using Markdig.Extensions.AutoIdentifiers;
+using Markdig.Extensions.Tables;
 
 namespace AngryMonkey
 {
     public partial class Processor
     {
-
         internal void ProcessMD(string md)
         {
             string name = Nav.SanitizeFilename(md);
             string html = raw_html;
 
             html = html.Replace("<!--REPLACE--NAV-->", navHtml);
+            html = html.Replace("<!--REPLACE-SUPERNAV-->", MainNavHTML);
 
             #region Get Title
 
@@ -39,7 +41,8 @@ namespace AngryMonkey
             StringBuilder bread = new StringBuilder();
 
             bread.AppendLine("<ol class=\"breadcrumb\">");
-            bread.AppendLine("<li class=\"breadcrumb-item\"><a href=\"index.html\">Documentation</a></li>");
+            bread.AppendLine(
+                "<li class=\"breadcrumb-item\"><a href=\"/index.html\"><i class=\"ion ion-ios-home d-block\"></i></a></li>");
             bread.AppendLine($"<li class=\"breadcrumb-item\"><a href=\"{BaseItem.Link}\">{BaseItem.Title}</a></li>");
             if (navs.Items.Any(i => i.Items.Any(x => x.Title == title)))
                 bread.AppendLine(
@@ -82,7 +85,9 @@ namespace AngryMonkey
             }
 
             html = html.Replace("<!--REPLACE--BODY-->", output.ToString());
+            html = html.Replace("%%TITLE%%", title);
             html = html.Replace("<!--REPLACE--BREADCRUMBS-->", bread.ToString());
+
             try
             {
                 string subpath = Path.GetDirectoryName(md.Replace(RootPath, RootPath + dst)).Replace("source\\", "");
@@ -105,19 +110,58 @@ namespace AngryMonkey
             //Console.Write(".");
         }
 
+        internal void ProcessRootMD(string md)
+        {
+            p = new MarkdownPipelineBuilder().UsePipeTables(new PipeTableOptions {RequireHeaderSeparator = true})
+                                             .UseBootstrap()
+                                             .UseYamlFrontMatter()
+                                             .UseGenericAttributes()
+                                             .UseAutoIdentifiers(AutoIdentifierOptions.GitHub)
+                                             .Build();
+
+            string name = Nav.SanitizeFilename(md);
+            string html = raw_html;
+
+            html = html.Replace("<!--REPLACE-SUPERNAV-->", MainNavHTML);
+
+            string[] lines = File.ReadAllLines(md);
+
+            StringBuilder raw = new StringBuilder();
+
+            foreach (string s in lines)
+            {
+                raw.AppendLine(ProcessLinks(s));
+            }
+
+            StringBuilder output = new StringBuilder();
+
+            output.AppendLine("<div class=\"card\">");
+            output.AppendLine("<div class=\"card-body\">");
+            output.AppendLine(Markdown.ToHtml(raw.ToString(), p));
+            output.AppendLine("</div></div>");
+            html = html.Replace("%%TITLE%%", "Home");
+            html = html.Replace("<!--REPLACE--BODY-->", output.ToString());
+            try
+            {
+                File.WriteAllText(RootPath + dst + name + ".html", minifier.Minify(html).MinifiedContent);
+            }
+            catch (IOException)
+            {
+                Console.WriteLine("ERROR: " + RootPath + dst + name + ".html could not be written.");
+            }
+
+            //Console.Write(".");
+        }
+
         private static string ReplaceNumbers(string subpath)
         {
             for (int i = 0; i < 10; i++)
             {
                 subpath = subpath.Replace($"0{i}-", "");
+                subpath = subpath.Replace($"{i}-", "");
             }
 
-            for (int i = 10; i < 99; i++)
-            {
-                subpath = subpath.Replace($"0{i}-", "");
-            }
-
-            return subpath; 
+            return subpath;
         }
 
         private static string ProcessLinks(string s)
@@ -125,10 +169,10 @@ namespace AngryMonkey
             if (s.Contains("@"))
             {
                 s = Nav.identifiers.Where(i => i.UID != null)
-                               .Aggregate(s,
-                                          (current, identifier)
-                                              => current.Replace(identifier.UID,
-                                                                 $"[{identifier.Title}]({identifier.Link})"));
+                       .Aggregate(s,
+                                  (current, identifier)
+                                      => current.Replace(identifier.UID,
+                                                         $"[{identifier.Title}]({identifier.Link})"));
             }
 
             return s;
@@ -246,7 +290,7 @@ namespace AngryMonkey
             bool first = false;
 
             foreach (string title in enumerable.Select(
-                x => x.Split(new[] { "--" }, StringSplitOptions.RemoveEmptyEntries).Last()))
+                x => x.Split(new[] {"--"}, StringSplitOptions.RemoveEmptyEntries).Last()))
             {
                 if (!first)
                 {
@@ -290,7 +334,7 @@ namespace AngryMonkey
                     string text = texts[index];
                     sb.AppendLine("<div class=\"card\">");
                     sb.AppendLine(
-                        $"<img   class=\"card-img-top\" src=\"images/ref/{Path.GetFileName(image)}\" />");
+                        $"<img   class=\"card-img-top\" src=\"/images/ref/{Path.GetFileName(image)}\" />");
                     sb.AppendLine("<div class=\"card-footer\"><ul>");
                     foreach (string[] split in File.ReadAllLines(text).Select(line => line.Split('=')))
                     {
@@ -323,7 +367,6 @@ namespace AngryMonkey
 
             return content.ToString();
         }
-
 
         public void ProcessChangelogs(string json = "Z:\\Git\\Gaea\\Gaea-Docs\\changelogs.json")
         {
@@ -369,6 +412,5 @@ namespace AngryMonkey
 
             File.WriteAllText(RootPath + dst + "changelogs.html", minifier.Minify(html).MinifiedContent);
         }
-
     }
 }

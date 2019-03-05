@@ -46,6 +46,7 @@ namespace AngryMonkey
         internal string src { get; set; } = @"source\";
 
         internal string dst { get; set; } = @"docs\";
+        public string MainNavHTML { get; set; }
 
 
         internal void Process()

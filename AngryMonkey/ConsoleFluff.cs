@@ -15,9 +15,9 @@ namespace AngryMonkey
         internal static Color purple = Color.MediumSlateBlue;
         internal static Color red = Color.PaleVioletRed;
 
-        private static int animationSpeed { get; } = 3;
+        private static int animationSpeed { get; } = 5;
 
-        private static int waitSpeed { get; } = 300;
+        private static int waitSpeed { get; } = 30;
 
         internal static void SetConsoleAppearance()
         {
@@ -88,32 +88,24 @@ namespace AngryMonkey
             Console.CursorLeft = 0;
         }
 
-        internal static void WriteLine(string a, Color c1, bool wait = false)
+        internal static void WriteLine(string a, Color c1, bool wait = true)
         {
             Write(a, "", c1, c1, wait);
             Console.WriteLine();
         }
 
-        internal static void Write(string a, Color c1, bool wait = false) { Write(a, "", c1, c1, wait); }
+        internal static void Write(string a, Color c1, bool wait = true) => Write(a, "", c1, c1, wait);
 
-        internal static void WriteLine(string a, string b, Color c1, Color c2, bool wait = false)
+        internal static void WriteLine(string a, string b, Color c1, Color c2, bool wait = true)
         {
             Write(a, b, c1, c2, wait);
             Console.WriteLine();
         }
 
-        internal static void Write(string a, string b, Color c1, Color c2, bool wait = false)
+        internal static void Write(string a, string b, Color c1, Color c2, bool wait = true)
         {
-            foreach (char c in a)
-            {
-                Console.Write(c, c1);
-            }
-
-            foreach (char c in b)
-            {
-                Console.Write(c, c2);
-                Thread.Sleep(animationSpeed);
-            }
+            Console.Write(a, c1);
+            Console.Write(b, c2);
 
             if (wait)
                 Thread.Sleep(waitSpeed);
@@ -131,8 +123,8 @@ namespace AngryMonkey
             {
                 System.Console.CursorVisible = false;
                 int left = System.Console.CursorLeft;
-                decimal perc = complete / (decimal) (maxVal - 1);
-                int chars = (int) Math.Floor(perc / (1 / (decimal) barSize));
+                decimal perc = complete / (decimal)(maxVal - 1);
+                int chars = (int)Math.Floor(perc / (1 / (decimal)barSize));
                 string p1 = string.Empty;
                 string p2 = string.Empty;
 

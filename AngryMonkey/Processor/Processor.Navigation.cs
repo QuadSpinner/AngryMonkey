@@ -12,8 +12,6 @@ namespace AngryMonkey
         private string ProcessNav(NavItem n)
         {
             StringBuilder html = new StringBuilder();
-
-
             html.AppendLine("<li class=\"sidenav-item\">");
 
             if (n.Items.Count > 0)
@@ -23,7 +21,6 @@ namespace AngryMonkey
             else
             {
                 string link = n.Link.Replace(RootPath, string.Empty).Replace("\\", "/").Replace(".md", ".html");
-                
                 html.AppendLine($"<a href=\"{link}\" class=\"sidenav-link\">");
             }
 
@@ -64,7 +61,7 @@ namespace AngryMonkey
             foreach (string md in mds.Where(md => !md.ToLower().EndsWith(".params.md") && !md.Contains("--")))
             {
                 var temp = Nav.GetNavItem(md);
-                temp.Link  = temp.Link.Replace(RootPath, string.Empty).Replace("\\", "/").Replace(".md", ".html");
+                temp.Link = ReplaceNumbers(temp.Link.Replace(RootPath + "source", string.Empty).Replace("\\", "/").Replace(".md", ".html"));
 
                 if (temp.Show)
                     current.Items.Add(temp);
