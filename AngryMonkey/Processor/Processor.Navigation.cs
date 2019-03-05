@@ -7,15 +7,7 @@ namespace AngryMonkey
 {
     public partial class Processor
     {
-        internal void GetIdentifiers(string dir)
-        {
-            IEnumerable<string> mds = Directory.GetFiles(dir, "*.md", SearchOption.AllDirectories);
 
-            foreach (string md in mds.Where(md => !md.ToLower().EndsWith(".params.md") && !md.Contains("--")))
-            {
-                identifiers.Add(GetNavItem(md));
-            }
-        }
 
         private static string ProcessNav(NavItem n)
         {
@@ -45,51 +37,11 @@ namespace AngryMonkey
             return html.ToString();
         }
 
-        private NavItem GetNavItem(string md)
-        {
-            string name = SanitizeFilename(md);
-
-            var n = new NavItem(tt.ToTitleCase(name.Replace("-", " ")), md);
-
-            string[] lines = File.ReadAllLines(md);
-
-            for (int i = 1; i < 4; i++)
-            {
-                if (lines[i].Contains("uid:"))
-                {
-                    n.UID = "@" + lines[i].Split(':')[1].Trim();
-                }
-
-                if (lines[i].Contains("title:"))
-                {
-                    n.Title = lines[i].Split(':')[1].Trim();
-                }
-
-                if (lines[i].Contains("nav:"))
-                {
-                    n.Show = lines[i].Split(':')[1].Trim() == "true";
-                }
-            }
-
-            n.Link = name + ".html";
-
-            return n;
-        }
-
-        private static string SanitizeFilename(string md)
-        {
-            return Path.GetFileNameWithoutExtension(md).Contains("-") &&
-                   int.TryParse(Path.GetFileNameWithoutExtension(md).Split('-')[0], out int _)
-                       ? Path.GetFileNameWithoutExtension(md)
-                             .Replace(Path.GetFileNameWithoutExtension(md).Split('-')[0] + "-", string.Empty)
-                       : Path.GetFileNameWithoutExtension(md);
-        }
-
         private NavItem ParseDirectory(string dir)
         {
             IEnumerable<string> dirs = Directory.EnumerateDirectories(dir);
 
-            string dirName = tt.ToTitleCase(dir.Trim('\\').Split('\\').Last());
+            string dirName = Nav.tt.ToTitleCase(dir.Trim('\\').Split('\\').Last());
 
             if (dirName.Contains("-"))
             {
@@ -102,7 +54,7 @@ namespace AngryMonkey
 
             foreach (string md in mds.Where(md => !md.ToLower().EndsWith(".params.md") && !md.Contains("--")))
             {
-                var temp = GetNavItem(md);
+                var temp = Nav.GetNavItem(md);
                 if (temp.Show)
                     current.Items.Add(temp);
                 MDs.Add(md);

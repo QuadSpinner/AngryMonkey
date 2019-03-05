@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
+﻿using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Markdig;
@@ -20,7 +17,6 @@ namespace AngryMonkey
 
         public string CardTemplate = @"_template\card.frag";
 
-        internal List<NavItem> identifiers = new List<NavItem>();
         private List<string> MDs = new List<string>();
 
         private HtmlMinifier minifier = new HtmlMinifier(new HtmlMinificationSettings(true)
@@ -33,7 +29,6 @@ namespace AngryMonkey
         private NavItem navs;
         private MarkdownPipeline p;
         private string raw_html;
-        private TextInfo tt = new CultureInfo("en-US", false).TextInfo;
 
         public Processor(string rootPath)
         {
@@ -53,6 +48,7 @@ namespace AngryMonkey
 
         internal string dst { get; set; } = @"docs\";
 
+
         internal void Process()
         {
             StringBuilder nhtml = new StringBuilder();
@@ -63,9 +59,6 @@ namespace AngryMonkey
                                              .UseGenericAttributes()
                                              .UseAutoIdentifiers(AutoIdentifierOptions.GitHub)
                                              .Build();
-
-            if (identifiers.Count == 0)
-                GetIdentifiers(RootPath + "source\\");
 
             nhtml.AppendLine(
                 $"<div id=\"layout-sidenav\"\r\n class=\"layout-sidenav-horizontal sidenav sidenav-horizontal bg-sidenav-theme container-p-x flex-grow-0\">\r\n <div class=\"container d-flex\">\r\n <ul class=\"sidenav-inner {BaseItem.UID}\">");

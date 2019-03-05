@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using Markdig;
 
 namespace AngryMonkey
@@ -13,7 +12,7 @@ namespace AngryMonkey
 
         internal void ProcessMD(string md)
         {
-            string name = SanitizeFilename(md);
+            string name = Nav.SanitizeFilename(md);
             string html = raw_html;
 
             html = html.Replace("<!--REPLACE--NAV-->", navHtml);
@@ -89,11 +88,11 @@ namespace AngryMonkey
             //Console.Write(".");
         }
 
-        private string ProcessLinks(string s)
+        private static string ProcessLinks(string s)
         {
             if (s.Contains("@"))
             {
-                s = identifiers.Where(i => i.UID != null)
+                s = Nav.identifiers.Where(i => i.UID != null)
                                .Aggregate(s,
                                           (current, identifier)
                                               => current.Replace(identifier.UID,
