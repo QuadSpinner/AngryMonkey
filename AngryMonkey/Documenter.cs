@@ -16,6 +16,8 @@ namespace AngryMonkey
         {
             SetConsoleAppearance();
 
+            Console.WriteLine("          __\r\n     w  c(..)o   (\r\n      \\__(-)    __)\r\n          /\\   (\r\n         /(_)___)\r\n         w /|\r\n          | \\\r\n         m  m");
+
             string[] delete = Directory.GetFiles(RootPath + "docs", "*.html", SearchOption.TopDirectoryOnly);
 
             foreach (string d in delete)
@@ -37,10 +39,9 @@ namespace AngryMonkey
                     if (item.UID == null)
                     {
                         if (!bad)
-                            Console.WriteLine();
-                        Console.ForegroundColor = ConsoleColor.DarkRed;
-                        Console.WriteLine($"    {item.Title}({item.Link}) --- MISSING UID!");
-                        Console.ForegroundColor = ConsoleColor.Gray;
+                            WriteLine("\n(WARNING)\nMissing UIDs!", attn);
+                        WriteLine($"    {item.Title} ({item.Link})", info);
+
                         bad = true;
                     }
 
@@ -50,50 +51,54 @@ namespace AngryMonkey
                 int duplicates = uids.Count - uids.Distinct().Count();
                 if (duplicates > 0)
                 {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine($"\n{duplicates} duplicates found!");
+                    WriteLine($"\n(ERROR)\n{duplicates} duplicate(s) found!", sharp);
                     List<string> dupes = uids.GroupBy(x => x)
                                              .Where(g => g.Count() > 1)
                                              .Select(y => y.Key)
                                              .ToList();
                     foreach (string dupe in dupes.Distinct())
                     {
-                        Console.WriteLine($"    {dupe ?? "<null>"}");
+                        WriteLine($"    {dupe ?? "<null>"}", attn);
+                        foreach (NavItem n in Nav.identifiers.Where(nn => nn.UID == dupe))
+                        {
+                            WriteLine($"       {n.Title} :: {n.Link}", info);
+                        }
                     }
 
-                    Console.ForegroundColor = ConsoleColor.Gray;
-                    Console.WriteLine("\nThe monkey is angry! Build cancelled.");
+                    WriteLine("\nThe monkey is angry!\nBUILD CANCELLED", sharp);
                     return;
                 }
 
                 if (!bad)
                 {
                     OK();
-                    WriteLine($"{Nav.identifiers.Count} unique identifiers.", dim);
-                    WriteLine($"{Nav.identifiers.Count(n => !n.Show)} hidden identifiers.", dim);
+                    Write(Nav.identifiers.Count.ToString(), attn);
+                    WriteLine(" unique identifiers.", dim);
+                    Write(Nav.identifiers.Count(n => !n.Show).ToString(), attn);
+                    WriteLine(" hidden identifiers.", dim);
                 }
             }
 
             WriteLine("", dim);
 
-            DrawLine("Generating hives", info);
+            DrawLine("Hives", info);
 
             foreach (Hive hive in Hives)
             {
                 Write($"Processing {hive.Path.ToUpper()}...", dim);
                 Processor p = new Processor(RootPath)
-                              {
-                                  src = @"source\" + hive.Path,
-                                  BaseItem = hive.BaseItem,
-                                  ProcessProceduralFiles =hive.ProcessProceduralFiles,
-                                  ProcessExampleFiles = hive.ProcessExampleFiles
-                              };
+                {
+                    src = @"source\" + hive.Path,
+                    BaseItem = hive.BaseItem,
+                    ProcessProceduralFiles = hive.ProcessProceduralFiles,
+                    ProcessExampleFiles = hive.ProcessExampleFiles
+                };
                 p.Process();
                 OK();
             }
 
             WriteLine("", dim);
-            WriteLine("Generation completed.", success);
+            WriteLine("The monkey is happy!\nGENERATION COMPLETE", success);
             WriteLine("", dim);
         }
 

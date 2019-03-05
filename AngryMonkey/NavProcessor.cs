@@ -2,6 +2,7 @@
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace AngryMonkey
 {
@@ -14,7 +15,7 @@ namespace AngryMonkey
         {
             identifiers.Clear();
             IEnumerable<string> mds = Directory.GetFiles(dir, "*.md", SearchOption.AllDirectories);
-
+       
             foreach (string md in mds.Where(md => !md.ToLower().EndsWith(".params.md") && !md.Contains("--")))
             {
                 identifiers.Add(GetNavItem(md));

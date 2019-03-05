@@ -83,7 +83,14 @@ namespace AngryMonkey
 
             html = html.Replace("<!--REPLACE--BODY-->", output.ToString());
             html = html.Replace("<!--REPLACE--BREADCRUMBS-->", bread.ToString());
-            File.WriteAllText(RootPath + dst + name + ".html", minifier.Minify(html).MinifiedContent);
+            try
+            {
+                File.WriteAllText(RootPath + dst + name + ".html", minifier.Minify(html).MinifiedContent);
+            }
+            catch (IOException)
+            {
+                Console.WriteLine("ERROR: " + RootPath + dst + name + ".html could not be written.");
+            }
 
             //Console.Write(".");
         }

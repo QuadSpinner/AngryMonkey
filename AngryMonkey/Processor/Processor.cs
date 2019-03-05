@@ -60,8 +60,7 @@ namespace AngryMonkey
                                              .UseAutoIdentifiers(AutoIdentifierOptions.GitHub)
                                              .Build();
 
-            nhtml.AppendLine(
-                $"<div id=\"layout-sidenav\"\r\n class=\"layout-sidenav-horizontal sidenav sidenav-horizontal bg-sidenav-theme container-p-x flex-grow-0\">\r\n <div class=\"container d-flex\">\r\n <ul class=\"sidenav-inner {BaseItem.UID}\">");
+            nhtml.AppendLine($"<div id=\"layout-sidenav\"\r\n class=\"layout-sidenav-horizontal sidenav sidenav-horizontal bg-sidenav-theme container-p-x flex-grow-0\">\r\n <div class=\"container d-flex\">\r\n <ul class=\"sidenav-inner {BaseItem.UID}\">");
             foreach (NavItem item in navs.Items)
             {
                 nhtml.AppendLine(ProcessNav(item));
@@ -71,7 +70,13 @@ namespace AngryMonkey
 
             navHtml = minifier.Minify(nhtml.ToString()).MinifiedContent;
 
-            Parallel.For(0, MDs.Count, i => ProcessMD(MDs[i]));
+            for (int i = 0; i < MDs.Count; i++)
+            {
+                ProcessMD(MDs[i]);
+            }
+
+            //! Uncomment to use parallel processing. Useful when you have hundreds of files.
+            // Parallel.For(0, MDs.Count, i => ProcessMD(MDs[i]));
         }
 
 
