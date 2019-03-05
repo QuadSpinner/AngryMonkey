@@ -17,7 +17,8 @@ namespace AngryMonkey
         {
             SetConsoleAppearance();
 
-            Console.WriteLine("          __\r\n     w  c(..)o   (\r\n      \\__(-)    __)\r\n          /\\   (\r\n         /(_)___)\r\n         w /|\r\n          | \\\r\n         m  m");
+            Console.WriteLine(
+                "          __\r\n     w  c(..)o   (\r\n      \\__(-)    __)\r\n          /\\   (\r\n         /(_)___)\r\n         w /|\r\n          | \\\r\n         m  m");
 
             if (Hives == null || Hives.Count == 0)
             {
@@ -55,8 +56,8 @@ namespace AngryMonkey
                     {
                         if (!bad)
                             WriteLine("\n(WARNING)\nMissing UIDs!", attn);
-                        WriteLine($"    {item.Title} ({item.Link})", info);
 
+                        WriteLine($"    {item.Title} ({item.Link})", info);
                         bad = true;
                     }
 
@@ -71,6 +72,7 @@ namespace AngryMonkey
                                              .Where(g => g.Count() > 1)
                                              .Select(y => y.Key)
                                              .ToList();
+
                     foreach (string dupe in dupes.Distinct())
                     {
                         WriteLine($"    {dupe ?? "<null>"}", attn);
@@ -98,18 +100,16 @@ namespace AngryMonkey
 
             DrawLine("Hives", info);
 
-        
-
             foreach (Hive hive in Hives)
             {
                 Write($"Processing {hive.Path.ToUpper()}...", dim);
                 Processor p = new Processor(RootPath)
-                {
-                    src = @"source\" + hive.Path,
-                    BaseItem = hive.BaseItem,
-                    ProcessProceduralFiles = hive.ProcessProceduralFiles,
-                    ProcessExampleFiles = hive.ProcessExampleFiles
-                };
+                              {
+                                  src = @"source\" + hive.Path,
+                                  BaseItem = hive.BaseItem,
+                                  ProcessProceduralFiles = hive.ProcessProceduralFiles,
+                                  ProcessExampleFiles = hive.ProcessExampleFiles
+                              };
                 p.Process();
                 OK();
             }
