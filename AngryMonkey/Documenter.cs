@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using AngryMonkey.Objects;
+using Newtonsoft.Json;
 
 namespace AngryMonkey
 {
@@ -17,6 +18,20 @@ namespace AngryMonkey
             SetConsoleAppearance();
 
             Console.WriteLine("          __\r\n     w  c(..)o   (\r\n      \\__(-)    __)\r\n          /\\   (\r\n         /(_)___)\r\n         w /|\r\n          | \\\r\n         m  m");
+
+            if (Hives == null || Hives.Count == 0)
+            {
+                if (File.Exists(RootPath + "\\hives.json"))
+                {
+                    Hives = JsonConvert.DeserializeObject<List<Hive>>(File.ReadAllText(RootPath + "\\hives.json"));
+                }
+                else
+                {
+                    WriteLine("No HIVES were specified. HIVES.JSON is missing from the root.", sharp);
+                    WriteLine("\nThe monkey is angry!\nBUILD CANCELLED", sharp);
+                    return;
+                }
+            }
 
             string[] delete = Directory.GetFiles(RootPath + "docs", "*.html", SearchOption.TopDirectoryOnly);
 
@@ -82,6 +97,8 @@ namespace AngryMonkey
             WriteLine("", dim);
 
             DrawLine("Hives", info);
+
+        
 
             foreach (Hive hive in Hives)
             {
