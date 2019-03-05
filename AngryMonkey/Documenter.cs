@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using AngryMonkey.Objects;
@@ -7,7 +6,7 @@ using Newtonsoft.Json;
 
 namespace AngryMonkey
 {
-    internal partial class Documenter
+    internal class Documenter
     {
         public string RootPath { get; set; }
 
@@ -15,10 +14,10 @@ namespace AngryMonkey
 
         public void ProcessHives()
         {
-            SetConsoleAppearance();
+            C.SetConsoleAppearance();
 
-            Console.WriteLine(
-                "          __\r\n     w  c(..)o   (\r\n      \\__(-)    __)\r\n          /\\   (\r\n         /(_)___)\r\n         w /|\r\n          | \\\r\n         m  m");
+            C.WriteLine(
+                "          __\r\n     w  c(..)o   (\r\n      \\__(-)    __)\r\n          /\\   (\r\n         /(_)___)\r\n         w /|\r\n          | \\\r\n         m  m", C.gray);
 
             if (Hives == null || Hives.Count == 0)
             {
@@ -28,8 +27,8 @@ namespace AngryMonkey
                 }
                 else
                 {
-                    WriteLine("No HIVES were specified. HIVES.JSON is missing from the root.", sharp);
-                    WriteLine("\nThe monkey is angry!\nBUILD CANCELLED", sharp);
+                    C.WriteLine("No HIVES were specified. HIVES.JSON is missing from the root.", C.red);
+                    C.WriteLine("\nThe monkey is angry!\nBUILD CANCELLED", C.red);
                     return;
                 }
             }
@@ -43,9 +42,9 @@ namespace AngryMonkey
 
             if (Nav.identifiers.Count == 0)
             {
-                DrawLine("Identifiers", info);
+                C.DrawLine("Identifiers", C.blue);
 
-                Write("Mapping identifiers...", dim);
+                C.Write("Mapping identifiers...", C.gray);
                 Nav.GetIdentifiers(RootPath + "source\\");
 
                 List<string> uids = new List<string>();
@@ -55,9 +54,9 @@ namespace AngryMonkey
                     if (item.UID == null)
                     {
                         if (!bad)
-                            WriteLine("\n(WARNING)\nMissing UIDs!", attn);
+                            C.WriteLine("\n(WARNING)\nMissing UIDs!", C.gold);
 
-                        WriteLine($"    {item.Title} ({item.Link})", info);
+                        C.WriteLine($"    {item.Title} ({item.Link})", C.blue);
                         bad = true;
                     }
 
@@ -67,7 +66,7 @@ namespace AngryMonkey
                 int duplicates = uids.Count - uids.Distinct().Count();
                 if (duplicates > 0)
                 {
-                    WriteLine($"\n(ERROR)\n{duplicates} duplicate(s) found!", sharp);
+                    C.WriteLine($"\n(ERROR)\n{duplicates} duplicate(s) found!", C.red);
                     List<string> dupes = uids.GroupBy(x => x)
                                              .Where(g => g.Count() > 1)
                                              .Select(y => y.Key)
@@ -75,50 +74,50 @@ namespace AngryMonkey
 
                     foreach (string dupe in dupes.Distinct())
                     {
-                        WriteLine($"    {dupe ?? "<null>"}", attn);
+                        C.WriteLine($"    {dupe ?? "<null>"}", C.gold);
                         foreach (NavItem n in Nav.identifiers.Where(nn => nn.UID == dupe))
                         {
-                            WriteLine($"       {n.Title} :: {n.Link}", info);
+                            C.WriteLine($"       {n.Title} :: {n.Link}", C.blue);
                         }
                     }
 
-                    WriteLine("\nThe monkey is angry!\nBUILD CANCELLED", sharp);
+                    C.WriteLine("\nThe monkey is angry!\nBUILD CANCELLED", C.red);
                     return;
                 }
 
                 if (!bad)
                 {
                     OK();
-                    Write(Nav.identifiers.Count.ToString(), attn);
-                    WriteLine(" unique identifiers.", dim);
-                    Write(Nav.identifiers.Count(n => !n.Show).ToString(), attn);
-                    WriteLine(" hidden identifiers.", dim);
+                    C.Write(Nav.identifiers.Count.ToString(), C.gold);
+                    C.WriteLine(" unique identifiers.", C.gray);
+                    C.Write(Nav.identifiers.Count(n => !n.Show).ToString(), C.gold);
+                    C.WriteLine(" hidden identifiers.", C.gray);
                 }
             }
 
-            WriteLine("", dim);
+            C.WriteLine("", C.gray);
 
-            DrawLine("Hives", info);
+            C.DrawLine("Hives", C.blue);
 
             foreach (Hive hive in Hives)
             {
-                Write($"Processing {hive.Path.ToUpper()}...", dim);
+                C.Write($"Processing {hive.Path.ToUpper()}...", C.gray);
                 Processor p = new Processor(RootPath)
-                              {
-                                  src = @"source\" + hive.Path,
-                                  BaseItem = hive.BaseItem,
-                                  ProcessProceduralFiles = hive.ProcessProceduralFiles,
-                                  ProcessExampleFiles = hive.ProcessExampleFiles
-                              };
+                {
+                    src = @"source\" + hive.Path,
+                    BaseItem = hive.BaseItem,
+                    ProcessProceduralFiles = hive.ProcessProceduralFiles,
+                    ProcessExampleFiles = hive.ProcessExampleFiles
+                };
                 p.Process();
                 OK();
             }
 
-            WriteLine("", dim);
-            WriteLine("The monkey is happy!\nGENERATION COMPLETE", success);
-            WriteLine("", dim);
+            C.WriteLine("", C.gray);
+            C.WriteLine("The monkey is happy!\nGENERATION COMPLETE", C.green);
+            C.WriteLine("", C.gray);
         }
 
-        private static void OK() { WriteLine("OK", success); }
+        private static void OK() { C.WriteLine("OK", C.green); }
     }
 }

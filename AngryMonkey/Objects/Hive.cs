@@ -14,8 +14,8 @@
 
         public NavItem BaseItem { get; set; }
 
-        public bool ProcessProceduralFiles { get; set; } = true;
+        public bool ProcessProceduralFiles { get; set; }
 
-        public bool ProcessExampleFiles { get; set; } = true;
+        public bool ProcessExampleFiles { get; set; }
     }
 }
