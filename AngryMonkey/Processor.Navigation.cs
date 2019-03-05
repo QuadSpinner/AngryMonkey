@@ -53,7 +53,7 @@ namespace AngryMonkey
 
             string[] lines = File.ReadAllLines(md);
 
-            for (int i = 1; i < 3; i++)
+            for (int i = 1; i < 4; i++)
             {
                 if (lines[i].Contains("uid:"))
                 {
@@ -63,6 +63,11 @@ namespace AngryMonkey
                 if (lines[i].Contains("title:"))
                 {
                     n.Title = lines[i].Split(':')[1].Trim();
+                }
+
+                if (lines[i].Contains("nav:"))
+                {
+                    n.Show = lines[i].Split(':')[1].Trim() == "true";
                 }
             }
 
@@ -93,18 +98,14 @@ namespace AngryMonkey
 
             NavItem current = new NavItem(dirName);
 
-            if (!dirs.Any())
+            string[] mds = Directory.GetFiles(dir, "*.md");
+
+            foreach (string md in mds.Where(md => !md.ToLower().EndsWith(".params.md") && !md.Contains("--")))
             {
-                string[] mds = Directory.GetFiles(dir, "*.md");
-
-                foreach (string md in mds.Where(md => !md.ToLower().EndsWith(".params.md") && !md.Contains("--")))
-                {
-                    var temp = GetNavItem(md);
+                var temp = GetNavItem(md);
+                if (temp.Show)
                     current.Items.Add(temp);
-                    MDs.Add(md);
-                }
-
-                return current;
+                MDs.Add(md);
             }
 
             foreach (string d in dirs)

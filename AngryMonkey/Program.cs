@@ -10,8 +10,13 @@ namespace AngryMonkey
         private static void Main(string[] args)
         {
             Processor guide = new Processor(@"Z:\Git\Gaea\Gaea-Docs\")
-            { src = @"source\USER GUIDE\", RootPath = @"Z:\Git\Gaea\Gaea-Docs\" };
+                              {
+                                  src = @"source\USER GUIDE\",
+                                  RootPath = @"Z:\Git\Gaea\Gaea-Docs\"
+                              };
+
             string[] delete = Directory.GetFiles(guide.RootPath + guide.dst, "*.html", SearchOption.TopDirectoryOnly);
+
             foreach (string d in delete)
             {
                 File.Delete(d);
@@ -46,7 +51,6 @@ namespace AngryMonkey
                     foreach (string dupe in dupes.Distinct())
                     {
                         Console.WriteLine($"    {dupe ?? "<null>"}");
-                        bad = true;
                     }
                     Console.ForegroundColor = ConsoleColor.Gray;
                     Console.WriteLine("\nThe monkey is angry! Build cancelled.");
@@ -60,7 +64,7 @@ namespace AngryMonkey
             Console.Write("Parsing USER GUIDE...");
             guide.Process();
             guide.ProcessChangelogs();
-            guide.ProcessLooseFiles(@"source\USER GUIDE_loose\");
+            // guide.ProcessLooseFiles(@"source\USER GUIDE_loose\");
             OK();
             Processor reference = new Processor(@"Z:\Git\Gaea\Gaea-Docs\")
             {
@@ -70,7 +74,6 @@ namespace AngryMonkey
             };
             Console.Write("Parsing REFERENCE...");
             reference.Process();
-            reference.ProcessLooseFiles(@"source\REFERENCE_loose\");
             OK();
             Processor tuts = new Processor(@"Z:\Git\Gaea\Gaea-Docs\")
             {
@@ -80,7 +83,6 @@ namespace AngryMonkey
             };
             Console.Write("Parsing TUTS...");
             tuts.Process();
-            tuts.ProcessLooseFiles(@"source\TUTORIALS_Loose\");
             OK();
             Processor developers = new Processor(@"Z:\Git\Gaea\Gaea-Docs\")
             {
@@ -90,7 +92,6 @@ namespace AngryMonkey
             };
             Console.Write("Parsing DEV...");
             developers.Process();
-            developers.ProcessLooseFiles(@"source\DEVELOPERS_Loose\");
             OK();
             Processor unsorted = new Processor(@"Z:\Git\Gaea\Gaea-Docs\")
             {

@@ -11,14 +11,6 @@ namespace AngryMonkey
     public partial class Processor
     {
 
-        internal void ProcessLooseFiles(string dir)
-        {
-            foreach (string file in Directory.GetFiles(RootPath + dir, "*.md"))
-            {
-                ProcessMD(file);
-            }
-        }
-
         internal void ProcessMD(string md)
         {
             string name = SanitizeFilename(md);

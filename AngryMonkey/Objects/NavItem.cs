@@ -22,6 +22,8 @@ namespace AngryMonkey
 
         public string UID { get; set; }
 
+        public bool Show { get; set; } = true;
+
         public List<NavItem> Items { get; set; } = new List<NavItem>();
 
         public override string ToString() => Title;
