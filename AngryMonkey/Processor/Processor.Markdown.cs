@@ -61,6 +61,7 @@ namespace AngryMonkey
                 {
                     f = f;
                 }
+
                 raw.AppendLine(ProcessLinks(s));
             }
 
@@ -86,7 +87,13 @@ namespace AngryMonkey
             if (ProcessExampleFiles)
             {
                 //! EXAMPLES
-                output.AppendLine(PrepareExamples(md));
+                output.AppendLine(ProcessExamples(md));
+            }
+
+            if (ProcessTutorialFiles)
+            {
+                //! TUTORIALS
+                output.AppendLine(ProcessTutorials(md));
             }
 
             html = html.Replace("<!--REPLACE--BODY-->", output.ToString());
@@ -95,12 +102,13 @@ namespace AngryMonkey
 
             try
             {
-                string subpath = Path.GetDirectoryName(md.Replace(Nav.RootPath, Nav.RootPath + dst)).Replace("source\\", "");
+                string subpath = Path.GetDirectoryName(md.Replace(Nav.RootPath, Nav.RootPath + dst))
+                                     .Replace("source\\", "");
                 if (!subpath.EndsWith("\\"))
                     subpath = subpath + "\\";
 
                 subpath = Nav.ReplaceNumbers(subpath);
-                
+
                 Directory.CreateDirectory(subpath);
 
                 File.WriteAllText(subpath + name + ".html", minifier.Minify(html).MinifiedContent);
@@ -155,7 +163,6 @@ namespace AngryMonkey
 
             //Console.Write(".");
         }
-
 
         private static string ProcessLinks(string s)
         {
@@ -261,9 +268,109 @@ namespace AngryMonkey
             return html.ToString();
         }
 
-        private string PrepareExamples(string file)
+        private string ProcessExamples(string file)
         {
-            string[] dirs = Directory.GetDirectories(ScreenshotPath);
+            string[] dirs = Directory.GetDirectories(Nav.RootPath + ScreenshotPath);
+
+            // Get the node id
+            string id = Path.GetFileNameWithoutExtension(file);
+
+            // For each directory matching our node name
+            IEnumerable<string> enumerable = dirs.Where(s => s.Contains(id + "--"));
+
+            if (!enumerable.Any())
+                return "";
+
+            List<string> titles = new List<string>();
+            StringBuilder TabStrip = new StringBuilder();
+
+            TabStrip.AppendLine(
+                "<br><h6 class=\"ml-2\">Examples</h6><div class=\"examples\">" +
+                "<div class=\"nav-tabs-top mb-4\"><ul class=\"nav nav-sm nav-tabs\">");
+            bool first = false;
+
+            foreach (string title in enumerable.Select(
+                x => x.Split(new[] {"--"}, StringSplitOptions.RemoveEmptyEntries).Last()))
+            {
+                if (!first)
+                {
+                    TabStrip.AppendLine(
+                        $"<li class=\"nav-item\"><a class=\"nav-link active\" data-toggle=\"tab\" href=\"#ex-{title.Replace(" ", "-")}\">{title}</a></li>");
+                    first = true;
+                }
+                else
+                {
+                    TabStrip.AppendLine(
+                        $"<li class=\"nav-item\"><a class=\"nav-link\" data-toggle=\"tab\" href=\"#ex-{title.Replace(" ", "-")}\">{title}</a></li>");
+                }
+
+                titles.Add(title);
+            }
+
+            TabStrip.AppendLine("</ul>");
+
+            StringBuilder content = new StringBuilder();
+
+            content.AppendLine(TabStrip.ToString());
+            content.AppendLine("<div class=\"tab-content\">");
+
+            int titleIndex = 0;
+            foreach (string dir in enumerable)
+            {
+                // Individual example content
+                StringBuilder sb = new StringBuilder();
+
+                // Get all images
+                string[] images = Directory.GetFiles(dir, "*.png");
+                string[] texts = Directory.GetFiles(dir, "*.txt");
+
+                // Create markup
+
+                sb.AppendLine(images.Length > 3 ? "<div class=\"card-columns\">" : "<div class=\"card-deck\">");
+
+                for (int index = 0; index < images.Length; index++)
+                {
+                    string image = images[index];
+                    string text = texts[index];
+                    sb.AppendLine("<div class=\"card\">");
+                    sb.AppendLine(
+                        $"<img   class=\"card-img-top\" src=\"/images/ref/{Path.GetFileName(image)}\" />");
+                    sb.AppendLine("<div class=\"card-footer\"><ul>");
+                    foreach (string[] split in File.ReadAllLines(text).Select(line => line.Split('=')))
+                    {
+                        sb.AppendLine("<li>" + split[0].Trim() + " <code>" + split[1] + "</code></li>");
+                    }
+
+                    sb.AppendLine("</ul></div>");
+                    sb.AppendLine("</div>");
+                }
+
+                sb.AppendLine("</div>");
+
+                // Add to main content
+
+                string title = titles[titleIndex];
+                content.AppendLine(
+                    titleIndex == 0
+                        ? $"<div class=\"tab-pane params fade active show\" id=\"ex-{title.Replace(" ", "-")}\"><div class=\"card-body\">"
+                        : $"<div class=\"tab-pane params fade show\" id=\"ex-{title.Replace(" ", "-")}\"><div class=\"card-body\">");
+
+                content.AppendLine(sb.ToString());
+
+                content.AppendLine("</div></div>");
+                titleIndex++;
+            }
+
+            content.AppendLine("</div>");
+            content.AppendLine("</div>");
+            content.AppendLine("</div>");
+
+            return content.ToString();
+        }
+
+        private string ProcessTutorials(string file)
+        {
+            string[] dirs = Directory.GetDirectories(Nav.RootPath + ScreenshotPath);
 
             // Get the node id
             string id = Path.GetFileNameWithoutExtension(file);

@@ -17,5 +17,7 @@
         public bool ProcessProceduralFiles { get; set; }
 
         public bool ProcessExampleFiles { get; set; }
+
+        public bool ProcessTutorialFiles { get; set; }
     }
 }

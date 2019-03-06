@@ -61,7 +61,6 @@ namespace AngryMonkey
             Write("".PadLeft(5, c), color);
             Console.WriteWithGradient(section.ToCharArray(), red, gold, 8);
             WriteLine("".PadRight(Console.WindowWidth - 7 - section.Length, c), color);
-            Console.WriteLine();
         }
 
         internal static string FixedText(string s, int size)

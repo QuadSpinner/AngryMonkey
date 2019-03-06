@@ -35,11 +35,13 @@ namespace AngryMonkey
             raw_html = File.ReadAllText(Nav.RootPath + BodyTemplate);
         }
 
-        public string ScreenshotPath { get; set; } = @"Z:\Sync\QuadSpinner DELTA\Help\Reference";
+        public string ScreenshotPath { get; set; } = @"screenshots\";
 
-        public bool ProcessProceduralFiles { get; set; } = true;
+        public bool ProcessProceduralFiles { get; set; } = false;
 
-        public bool ProcessExampleFiles { get; set; } = true;
+        public bool ProcessExampleFiles { get; set; } = false;
+
+        public bool ProcessTutorialFiles { get; set; } = false;
 
         internal string src { get; set; } = @"source\";
 
