@@ -56,6 +56,11 @@ namespace AngryMonkey
 
             foreach (string s in lines)
             {
+                bool f = s.Contains("@installing");
+                if (f)
+                {
+                    f = f;
+                }
                 raw.AppendLine(ProcessLinks(s));
             }
 
@@ -90,21 +95,19 @@ namespace AngryMonkey
 
             try
             {
-                string subpath = Path.GetDirectoryName(md.Replace(RootPath, RootPath + dst)).Replace("source\\", "");
+                string subpath = Path.GetDirectoryName(md.Replace(Nav.RootPath, Nav.RootPath + dst)).Replace("source\\", "");
                 if (!subpath.EndsWith("\\"))
                     subpath = subpath + "\\";
 
-                subpath = ReplaceNumbers(subpath);
-
-                subpath = Nav.tt.ToTitleCase(subpath);
-
+                subpath = Nav.ReplaceNumbers(subpath);
+                
                 Directory.CreateDirectory(subpath);
 
                 File.WriteAllText(subpath + name + ".html", minifier.Minify(html).MinifiedContent);
             }
             catch (IOException)
             {
-                Console.WriteLine("ERROR: " + RootPath + dst + name + ".html could not be written.");
+                Console.WriteLine("ERROR: " + Nav.RootPath + dst + name + ".html could not be written.");
             }
 
             //Console.Write(".");
@@ -143,26 +146,16 @@ namespace AngryMonkey
             html = html.Replace("<!--REPLACE--BODY-->", output.ToString());
             try
             {
-                File.WriteAllText(RootPath + dst + name + ".html", minifier.Minify(html).MinifiedContent);
+                File.WriteAllText(Nav.RootPath + dst + name + ".html", minifier.Minify(html).MinifiedContent);
             }
             catch (IOException)
             {
-                Console.WriteLine("ERROR: " + RootPath + dst + name + ".html could not be written.");
+                Console.WriteLine("ERROR: " + Nav.RootPath + dst + name + ".html could not be written.");
             }
 
             //Console.Write(".");
         }
 
-        private static string ReplaceNumbers(string subpath)
-        {
-            for (int i = 0; i < 10; i++)
-            {
-                subpath = subpath.Replace($"0{i}-", "");
-                subpath = subpath.Replace($"{i}-", "");
-            }
-
-            return subpath;
-        }
 
         private static string ProcessLinks(string s)
         {
@@ -374,7 +367,7 @@ namespace AngryMonkey
 
             StringBuilder all = new StringBuilder();
 
-            string card_template = File.ReadAllText(RootPath + CardTemplate);
+            string card_template = File.ReadAllText(Nav.RootPath + CardTemplate);
 
             foreach (Changelog log in logs)
             {
@@ -410,7 +403,7 @@ namespace AngryMonkey
 
             html = html.Replace("<!--REPLACE--BODY-->", all.ToString());
 
-            File.WriteAllText(RootPath + dst + "changelogs.html", minifier.Minify(html).MinifiedContent);
+            File.WriteAllText(Nav.RootPath + dst + "changelogs.html", minifier.Minify(html).MinifiedContent);
         }
     }
 }

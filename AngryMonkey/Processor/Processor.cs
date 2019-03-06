@@ -31,12 +31,11 @@ namespace AngryMonkey
 
         public Processor(string rootPath)
         {
-            RootPath = rootPath;
-            raw_html = File.ReadAllText(RootPath + BodyTemplate);
+            Nav.RootPath = rootPath;
+            raw_html = File.ReadAllText(Nav.RootPath + BodyTemplate);
         }
 
-        public string RootPath { get; set; }
-
+ 
         public string ScreenshotPath { get; set; } = @"Z:\Sync\QuadSpinner DELTA\Help\Reference";
 
         public bool ProcessProceduralFiles { get; set; } = true;
@@ -52,7 +51,7 @@ namespace AngryMonkey
         internal void Process()
         {
             StringBuilder nhtml = new StringBuilder();
-            navs = ParseDirectory(RootPath + src);
+            navs = ParseDirectory(Nav.RootPath + src);
             p = new MarkdownPipelineBuilder().UsePipeTables(new PipeTableOptions {RequireHeaderSeparator = true})
                                              .UseBootstrap()
                                              .UseYamlFrontMatter()

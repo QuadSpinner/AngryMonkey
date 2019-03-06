@@ -10,8 +10,6 @@ namespace AngryMonkey
 {
     internal class Documenter
     {
-        public string RootPath { get; set; }
-
         public List<Hive> Hives { get; set; } = new List<Hive>();
 
         public void ProcessHives()
@@ -20,13 +18,15 @@ namespace AngryMonkey
 
             Console.WriteLine("          __\r\n     w  c(..)o   (\r\n      \\__(-)    __)\r\n          /\\   (\r\n         /(_)___)\r\n         w /|\r\n          | \\\r\n         m  m", C.gray);
 
+            if (MapIdentifiers()) return;
+
             if (Hives == null || Hives.Count == 0)
             {
-                if (File.Exists(RootPath + "\\hives.json"))
+                if (File.Exists(Nav.RootPath + "\\hives.json"))
                 {
-                    Hives = JsonConvert.DeserializeObject<List<Hive>>(File.ReadAllText(RootPath + "\\hives.json"));
+                    Hives = JsonConvert.DeserializeObject<List<Hive>>(File.ReadAllText(Nav.RootPath + "\\hives.json"));
                     C.Write("\nROOT: ", C.gray);
-                    C.WriteLine(RootPath, C.gold);
+                    C.WriteLine(Nav.RootPath, C.gold);
                 }
                 else
                 {
@@ -36,21 +36,20 @@ namespace AngryMonkey
                 }
             }
 
-            if (MapIdentifiers()) return;
 
             C.WriteLine("", C.gray);
 
             C.DrawLine("Hives", C.blue);
 
-            if (File.Exists(RootPath + "source\\index.md"))
+            if (File.Exists(Nav.RootPath + "source\\index.md"))
             {
                 C.Write($"Processing Root Document...", C.gray);
                 StringBuilder superNav = new StringBuilder();
                 foreach (Hive h in Hives)
                     superNav.AppendLine($"<div class=\"nav-item\"><a class=\"nav-link\" href=\"/{h.BaseItem.Link}\">{h.BaseItem.Title}</a></div>");
 
-                Processor p = new Processor(RootPath) { MainNavHTML = superNav.ToString() };
-                p.ProcessRootMD(RootPath + "source\\index.md");
+                Processor p = new Processor(Nav.RootPath) { MainNavHTML = superNav.ToString() };
+                p.ProcessRootMD(Nav.RootPath + "source\\index.md");
                 OK();
             }
 
@@ -58,7 +57,7 @@ namespace AngryMonkey
             {
                 C.Write($"Processing {hive.Path}...", C.gray);
 
-                string path = RootPath + "docs\\" + hive.Path;
+                string path = Nav.RootPath + "docs\\" + hive.Path;
                 try
                 {
                     if (Directory.Exists(path))
@@ -79,7 +78,7 @@ namespace AngryMonkey
                         superNav.AppendLine($"<div class=\"nav-item\"><a class=\"nav-link\" href=\"/{h.BaseItem.Link}\">{h.BaseItem.Title}</a></div>");
                 }
 
-                Processor p = new Processor(RootPath)
+                Processor p = new Processor(Nav.RootPath)
                 {
                     MainNavHTML = superNav.ToString(),
                     src = @"source\" + hive.Path,
@@ -97,14 +96,14 @@ namespace AngryMonkey
             C.WriteLine("", C.gray);
         }
 
-        private bool MapIdentifiers()
+        private static bool MapIdentifiers()
         {
             if (Nav.identifiers.Count == 0)
             {
                 C.DrawLine("Identifiers", C.blue);
 
                 C.Write("Mapping identifiers...", C.gray);
-                Nav.GetIdentifiers(RootPath + "source\\");
+                Nav.GetIdentifiers(Nav.RootPath + "source\\");
 
                 List<string> uids = new List<string>();
                 bool bad = false;

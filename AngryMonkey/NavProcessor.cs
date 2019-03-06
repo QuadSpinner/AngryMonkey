@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -9,6 +10,7 @@ namespace AngryMonkey
     {
         internal static TextInfo tt = new CultureInfo("en-US", false).TextInfo;
         internal static List<NavItem> identifiers = new List<NavItem>();
+        public static string RootPath { get; set; }
 
         internal static void GetIdentifiers(string dir)
         {
@@ -47,17 +49,28 @@ namespace AngryMonkey
                 }
             }
 
-            // n.Link = name + ".html";
+            n.Link = Uri.EscapeUriString(ReplaceNumbers(n.Link.Replace(RootPath + "source", string.Empty).Replace("\\", "/").Replace(".md", ".html")));
 
             return n;
+        }
+
+        internal static string ReplaceNumbers(string subpath)
+        {
+            for (int i = 0; i < 10; i++)
+            {
+                subpath = subpath.Replace($"0{i}-", "");
+                subpath = subpath.Replace($"{i}-", "");
+            }
+
+            return subpath;
         }
 
         internal static string SanitizeFilename(string md)
         {
             return Path.GetFileNameWithoutExtension(md).Contains("-") &&
-                   int.TryParse(Path.GetFileNameWithoutExtension(md).Split('-')[0], out int _)
+                   Int32.TryParse(Path.GetFileNameWithoutExtension(md).Split('-')[0], out int _)
                        ? Path.GetFileNameWithoutExtension(md)
-                             .Replace(Path.GetFileNameWithoutExtension(md).Split('-')[0] + "-", string.Empty)
+                             .Replace(Path.GetFileNameWithoutExtension(md).Split('-')[0] + "-", String.Empty)
                        : Path.GetFileNameWithoutExtension(md);
         }
     }
