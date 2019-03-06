@@ -36,14 +36,13 @@ namespace AngryMonkey
                 }
             }
 
-
             C.WriteLine("", C.gray);
 
             C.DrawLine("Hives", C.blue);
 
             if (File.Exists(Nav.RootPath + "source\\index.md"))
             {
-                C.Write($"Processing Root Document...", C.gray);
+                C.Write("Processing Root Document...", C.gray);
                 StringBuilder superNav = new StringBuilder();
                 foreach (Hive h in Hives)
                     superNav.AppendLine($"<div class=\"nav-item\"><a class=\"nav-link\" href=\"/{h.BaseItem.Link}\">{h.BaseItem.Title}</a></div>");

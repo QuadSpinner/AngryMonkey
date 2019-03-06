@@ -6,11 +6,9 @@ namespace AngryMonkey
     {
         private static void Main(string[] args)
         {
-            string root = @"Z:\Git\Gaea\Gaea-Docs\";
-            if (args.Length == 0)
-            {
-                root = Environment.CurrentDirectory;
-            }
+            string root = args.Length == 0 
+                              ? Environment.CurrentDirectory // Use current directory
+                              : args[1]; // Use path supplied in the arguments
 
             if (!root.EndsWith("\\"))
                 root = $"{root}\\";

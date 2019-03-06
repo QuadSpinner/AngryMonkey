@@ -56,7 +56,7 @@ namespace AngryMonkey
 
         internal static string ReplaceNumbers(string subpath)
         {
-            for (int i = 0; i < 10; i++)
+            for (int i = 0; i < 100; i++)
             {
                 subpath = subpath.Replace($"0{i}-", "");
                 subpath = subpath.Replace($"{i}-", "");
@@ -68,7 +68,7 @@ namespace AngryMonkey
         internal static string SanitizeFilename(string md)
         {
             return Path.GetFileNameWithoutExtension(md).Contains("-") &&
-                   Int32.TryParse(Path.GetFileNameWithoutExtension(md).Split('-')[0], out int _)
+                   int.TryParse(Path.GetFileNameWithoutExtension(md).Split('-')[0], out int _)
                        ? Path.GetFileNameWithoutExtension(md)
                              .Replace(Path.GetFileNameWithoutExtension(md).Split('-')[0] + "-", String.Empty)
                        : Path.GetFileNameWithoutExtension(md);

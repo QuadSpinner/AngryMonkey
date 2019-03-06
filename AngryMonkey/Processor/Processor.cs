@@ -1,9 +1,9 @@
-﻿using System.Collections.Generic;
-using System.IO;
-using System.Text;
-using Markdig;
+﻿using Markdig;
 using Markdig.Extensions.AutoIdentifiers;
 using Markdig.Extensions.Tables;
+using System.Collections.Generic;
+using System.IO;
+using System.Text;
 using WebMarkupMin.Core;
 
 namespace AngryMonkey
@@ -12,17 +12,17 @@ namespace AngryMonkey
     {
         public const string BodyTemplate = @"_template\index.1.html";
 
-        internal NavItem BaseItem = new NavItem("User Guide", "guide.html") {UID = "guide"};
+        internal NavItem BaseItem = new NavItem("User Guide", "guide.html") { UID = "guide" };
 
         public string CardTemplate = @"_template\card.frag";
 
         private List<string> MDs = new List<string>();
 
         private HtmlMinifier minifier = new HtmlMinifier(new HtmlMinificationSettings(true)
-                                                         {
-                                                             MinifyInlineJsCode = true,
-                                                             WhitespaceMinificationMode = WhitespaceMinificationMode.Medium
-                                                         });
+        {
+            MinifyInlineJsCode = true,
+            WhitespaceMinificationMode = WhitespaceMinificationMode.Medium
+        });
 
         private string navHtml = "";
         private NavItem navs;
@@ -35,7 +35,6 @@ namespace AngryMonkey
             raw_html = File.ReadAllText(Nav.RootPath + BodyTemplate);
         }
 
- 
         public string ScreenshotPath { get; set; } = @"Z:\Sync\QuadSpinner DELTA\Help\Reference";
 
         public bool ProcessProceduralFiles { get; set; } = true;
@@ -45,14 +44,14 @@ namespace AngryMonkey
         internal string src { get; set; } = @"source\";
 
         internal string dst { get; set; } = @"docs\";
-        public string MainNavHTML { get; set; }
 
+        public string MainNavHTML { get; set; }
 
         internal void Process()
         {
             StringBuilder nhtml = new StringBuilder();
             navs = ParseDirectory(Nav.RootPath + src);
-            p = new MarkdownPipelineBuilder().UsePipeTables(new PipeTableOptions {RequireHeaderSeparator = true})
+            p = new MarkdownPipelineBuilder().UsePipeTables(new PipeTableOptions { RequireHeaderSeparator = true })
                                              .UseBootstrap()
                                              .UseYamlFrontMatter()
                                              .UseGenericAttributes()
@@ -77,7 +76,5 @@ namespace AngryMonkey
             //! Uncomment to use parallel processing. Useful when you have hundreds of files.
             // Parallel.For(0, MDs.Count, i => ProcessMD(MDs[i]));
         }
-
-
     }
 }
