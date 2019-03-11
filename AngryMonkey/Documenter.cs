@@ -1,10 +1,10 @@
-﻿using System;
+﻿using AngryMonkey.Objects;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using AngryMonkey.Objects;
-using Newtonsoft.Json;
 
 namespace AngryMonkey
 {
@@ -16,7 +16,7 @@ namespace AngryMonkey
         {
             C.SetConsoleAppearance();
 
-            Console.WriteLine("          __\r\n     w  c(..)o   (\r\n      \\__(-)    __)\r\n          /\\   (\r\n         /(_)___)\r\n         w /|\r\n          | \\\r\n         m  m", C.gray);
+            Console.WriteLine("          __\r\n     w  c(..)o   (\r\n      \\__(-)    __)\r\n          /\\   (\r\n         /(_)___)\r\n         w /|\r\n          | \\\r\n         m  m");
 
             if (MapIdentifiers()) return;
 
@@ -71,10 +71,9 @@ namespace AngryMonkey
                 StringBuilder superNav = new StringBuilder();
                 foreach (Hive h in Hives)
                 {
-                    if (h.Path == hive.Path)
-                        superNav.AppendLine($"<div class=\"nav-item active\"><a class=\"nav-link\" href=\"/{h.BaseItem.Link}\">{h.BaseItem.Title}</a></div>");
-                    else
-                        superNav.AppendLine($"<div class=\"nav-item\"><a class=\"nav-link\" href=\"/{h.BaseItem.Link}\">{h.BaseItem.Title}</a></div>");
+                    superNav.AppendLine(h.Path == hive.Path
+                                            ? $"<div class=\"nav-item active\"><a class=\"nav-link\" href=\"/{h.BaseItem.Link}\">{h.BaseItem.Title}</a></div>"
+                                            : $"<div class=\"nav-item\"><a class=\"nav-link\" href=\"/{h.BaseItem.Link}\">{h.BaseItem.Title}</a></div>");
                 }
 
                 Processor p = new Processor(Nav.RootPath)
@@ -83,7 +82,8 @@ namespace AngryMonkey
                     src = @"source\" + hive.Path,
                     BaseItem = hive.BaseItem,
                     ProcessProceduralFiles = hive.ProcessProceduralFiles,
-                    ProcessExampleFiles = hive.ProcessExampleFiles
+                    ProcessExampleFiles = hive.ProcessExampleFiles,
+                    ProcessTutorialFiles = hive.ProcessTutorialFiles
                 };
                 p.Process();
 
@@ -155,6 +155,9 @@ namespace AngryMonkey
             return false;
         }
 
-        private static void OK() { C.WriteLine("OK", C.green); }
+        private static void OK()
+        {
+            C.WriteLine("OK", C.green);
+        }
     }
 }

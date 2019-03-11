@@ -123,7 +123,7 @@ namespace AngryMonkey
 
         internal void ProcessRootMD(string md)
         {
-            p = new MarkdownPipelineBuilder().UsePipeTables(new PipeTableOptions {RequireHeaderSeparator = true})
+            p = new MarkdownPipelineBuilder().UsePipeTables(new PipeTableOptions { RequireHeaderSeparator = true })
                                              .UseBootstrap()
                                              .UseYamlFrontMatter()
                                              .UseGenericAttributes()
@@ -290,7 +290,7 @@ namespace AngryMonkey
             bool first = false;
 
             foreach (string title in enumerable.Select(
-                x => x.Split(new[] {"--"}, StringSplitOptions.RemoveEmptyEntries).Last()))
+                x => x.Split(new[] { "--" }, StringSplitOptions.RemoveEmptyEntries).Last()))
             {
                 if (!first)
                 {
@@ -370,102 +370,64 @@ namespace AngryMonkey
 
         private string ProcessTutorials(string file)
         {
-            string[] dirs = Directory.GetDirectories(Nav.RootPath + ScreenshotPath);
-
-            // Get the node id
             string id = Path.GetFileNameWithoutExtension(file);
 
-            // For each directory matching our node name
-            IEnumerable<string> enumerable = dirs.Where(s => s.Contains(id + "--"));
-
-            if (!enumerable.Any())
+            if (!Directory.Exists(Nav.RootPath + TutorialsPath + id))
                 return "";
 
-            List<string> titles = new List<string>();
-            StringBuilder TabStrip = new StringBuilder();
+            string dir = Nav.RootPath + TutorialsPath + id;
 
-            TabStrip.AppendLine(
-                "<br><h6 class=\"ml-2\">Examples</h6><div class=\"examples\">" +
-                "<div class=\"nav-tabs-top mb-4\"><ul class=\"nav nav-sm nav-tabs\">");
-            bool first = false;
 
-            foreach (string title in enumerable.Select(
-                x => x.Split(new[] {"--"}, StringSplitOptions.RemoveEmptyEntries).Last()))
+            // Individual example content
+            StringBuilder sb = new StringBuilder();
+
+            // Get all images
+            string[] images = Directory.GetFiles(dir, "*.png");
+            string[] texts = Directory.GetFiles(dir, "*.txt");
+
+            texts = texts.Where(s => !s.Contains("--Description")).ToArray();
+
+            // Create markup
+
+            sb.AppendLine("<div class=\"tutorial\">");
+            for (int index = 0; index < images.Length; index++)
             {
-                if (!first)
+                string image = images[index];
+                string text = texts[index];
+                sb.AppendLine("<div class=\"card\">");
+                sb.AppendLine($"<img class=\"card-img-top\" src=\"/images/tutorials/{id}/{Path.GetFileName(image)}\" />");
+                sb.AppendLine("<div class=\"card-footer\">");
+                sb.AppendLine($"<h4>{index + 1}. {Path.GetFileNameWithoutExtension(image).Split(new[] { "--" }, StringSplitOptions.RemoveEmptyEntries).Last()}</h4>");
+
+                sb.AppendLine("<ul class=\"checklist\">");
+
+                string[] data = File.ReadAllLines(text);
+
+                if (data == null || data.Length == 0)
                 {
-                    TabStrip.AppendLine(
-                        $"<li class=\"nav-item\"><a class=\"nav-link active\" data-toggle=\"tab\" href=\"#ex-{title.Replace(" ", "-")}\">{title}</a></li>");
-                    first = true;
+                    sb.AppendLine("<li>Leave settings at default.</li>");
                 }
                 else
                 {
-                    TabStrip.AppendLine(
-                        $"<li class=\"nav-item\"><a class=\"nav-link\" data-toggle=\"tab\" href=\"#ex-{title.Replace(" ", "-")}\">{title}</a></li>");
-                }
-
-                titles.Add(title);
-            }
-
-            TabStrip.AppendLine("</ul>");
-
-            StringBuilder content = new StringBuilder();
-
-            content.AppendLine(TabStrip.ToString());
-            content.AppendLine("<div class=\"tab-content\">");
-
-            int titleIndex = 0;
-            foreach (string dir in enumerable)
-            {
-                // Individual example content
-                StringBuilder sb = new StringBuilder();
-
-                // Get all images
-                string[] images = Directory.GetFiles(dir, "*.png");
-                string[] texts = Directory.GetFiles(dir, "*.txt");
-
-                // Create markup
-
-                sb.AppendLine(images.Length > 3 ? "<div class=\"card-columns\">" : "<div class=\"card-deck\">");
-
-                for (int index = 0; index < images.Length; index++)
-                {
-                    string image = images[index];
-                    string text = texts[index];
-                    sb.AppendLine("<div class=\"card\">");
-                    sb.AppendLine(
-                        $"<img   class=\"card-img-top\" src=\"/images/ref/{Path.GetFileName(image)}\" />");
-                    sb.AppendLine("<div class=\"card-footer\"><ul>");
-                    foreach (string[] split in File.ReadAllLines(text).Select(line => line.Split('=')))
+                    foreach (string[] split in data.Select(line => line.Split('=')))
                     {
-                        sb.AppendLine("<li>" + split[0].Trim() + " <code>" + split[1] + "</code></li>");
+                        sb.AppendLine("<li><span class=\"property\">" + split[0].Trim() + "</span> <code>" + split[1] + "</code></li>");
                     }
-
-                    sb.AppendLine("</ul></div>");
-                    sb.AppendLine("</div>");
                 }
+                sb.AppendLine("</ul>");
 
+                if (File.Exists(dir + "\\" + Path.GetFileNameWithoutExtension(image) + "--Description.txt"))
+                    sb.AppendLine(Markdown.ToHtml(File.ReadAllText(dir + "\\" + Path.GetFileNameWithoutExtension(image) + "--Description.txt"),
+                                p));
+                else
+                    sb.AppendLine("<p>CAPTION GOES HERE</p>");
                 sb.AppendLine("</div>");
-
-                // Add to main content
-
-                string title = titles[titleIndex];
-                content.AppendLine(
-                    titleIndex == 0
-                        ? $"<div class=\"tab-pane params fade active show\" id=\"ex-{title.Replace(" ", "-")}\"><div class=\"card-body\">"
-                        : $"<div class=\"tab-pane params fade show\" id=\"ex-{title.Replace(" ", "-")}\"><div class=\"card-body\">");
-
-                content.AppendLine(sb.ToString());
-
-                content.AppendLine("</div></div>");
-                titleIndex++;
+                sb.AppendLine("</div>");
             }
 
-            content.AppendLine("</div>");
-            content.AppendLine("</div>");
-            content.AppendLine("</div>");
+            sb.AppendLine("</div>");
 
-            return content.ToString();
+            return sb.ToString();
         }
 
         public void ProcessChangelogs(string json = "Z:\\Git\\Gaea\\Gaea-Docs\\changelogs.json")

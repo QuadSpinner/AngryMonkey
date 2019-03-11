@@ -36,6 +36,7 @@ namespace AngryMonkey
         }
 
         public string ScreenshotPath { get; set; } = @"screenshots\";
+        public string TutorialsPath { get; set; } = @"tutorials\";
 
         public bool ProcessProceduralFiles { get; set; } = false;
 
