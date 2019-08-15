@@ -61,13 +61,14 @@ namespace AngryMonkey
                                              .UseAutoIdentifiers(AutoIdentifierOptions.GitHub)
                                              .Build();
 
-            nhtml.AppendLine($"<div id=\"layout-sidenav\"\r\n class=\"layout-sidenav-horizontal sidenav sidenav-horizontal bg-sidenav-theme container-p-x flex-grow-0\">\r\n <div class=\"container d-flex\">\r\n <ul class=\"sidenav-inner {BaseItem.UID}\">");
+            nhtml.AppendLine("<div id=\"layout-sidenav\" class=\"layout-sidenav sidenav sidenav-vertical bg-sidenav-theme\">" +
+                             $"<ul class=\"sidenav-inner py-1 {BaseItem.UID}\">");
             foreach (NavItem item in navs.Items)
             {
                 nhtml.AppendLine(ProcessNav(item));
             }
 
-            nhtml.AppendLine("</ul></div></div>");
+            nhtml.AppendLine("</ul></div>");
 
             navHtml = minifier.Minify(nhtml.ToString()).MinifiedContent;
 

@@ -51,8 +51,11 @@ namespace AngryMonkey
                 p.ProcessRootMD(Nav.RootPath + "source\\index.md");
                 OK();
             }
-
-            foreach (Hive hive in Hives)
+#if DEBUG
+            foreach (Hive hive in Hives.Take(2))
+#else
+                foreach (Hive hive in Hives)
+#endif
             {
                 C.Write($"Processing {hive.Path}...", C.gray);
 
