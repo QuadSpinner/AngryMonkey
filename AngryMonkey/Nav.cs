@@ -6,6 +6,13 @@ using System.Linq;
 
 namespace AngryMonkey
 {
+
+    enum ActiveState
+    {
+        None,
+        Self,
+        Child
+    }
     internal static class Nav
     {
         internal static TextInfo tt = new CultureInfo("en-US", false).TextInfo;

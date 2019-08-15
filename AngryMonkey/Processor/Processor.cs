@@ -3,6 +3,7 @@ using Markdig.Extensions.AutoIdentifiers;
 using Markdig.Extensions.Tables;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using WebMarkupMin.Core;
 
@@ -52,7 +53,6 @@ namespace AngryMonkey
 
         internal void Process()
         {
-            StringBuilder nhtml = new StringBuilder();
             navs = ParseDirectory(Nav.RootPath + src);
             p = new MarkdownPipelineBuilder().UsePipeTables(new PipeTableOptions { RequireHeaderSeparator = true })
                                              .UseBootstrap()
@@ -60,20 +60,31 @@ namespace AngryMonkey
                                              .UseGenericAttributes()
                                              .UseAutoIdentifiers(AutoIdentifierOptions.GitHub)
                                              .Build();
-
-            nhtml.AppendLine("<div id=\"layout-sidenav\" class=\"layout-sidenav sidenav sidenav-vertical bg-sidenav-theme\">" +
-                             $"<ul class=\"sidenav-inner py-1 {BaseItem.UID}\">");
-            foreach (NavItem item in navs.Items)
-            {
-                nhtml.AppendLine(ProcessNav(item));
-            }
-
-            nhtml.AppendLine("</ul></div>");
-
-            navHtml = minifier.Minify(nhtml.ToString()).MinifiedContent;
-
             for (int i = 0; i < MDs.Count; i++)
             {
+                StringBuilder nhtml = new StringBuilder();
+                nhtml.AppendLine("<div id=\"layout-sidenav\" class=\"layout-sidenav sidenav sidenav-vertical bg-sidenav-theme\">" +
+                                 $"<ul class=\"sidenav-inner py-1 {BaseItem.UID}\">");
+
+                foreach (NavItem item in navs.Items)
+                {
+                    ActiveState active = ActiveState.None;
+                    string uid = Nav.GetNavItem(MDs[i]).UID;
+               
+         
+                    if (item.Items.Any() && item.Items.Any(t => t.UID == uid) 
+                        || item.Items.Any() && item.Items.Any(t => t.Items.Any() && t.Items.Any(x => x.Items.Any(y => y.UID == uid))))
+                    {
+                        active = ActiveState.Child;
+                    }
+                    nhtml.AppendLine(ProcessNav(item, active, uid));
+                }
+
+                nhtml.AppendLine("</ul></div>");
+
+
+                navHtml = minifier.Minify(nhtml.ToString()).MinifiedContent;
+
                 ProcessMD(MDs[i]);
             }
 

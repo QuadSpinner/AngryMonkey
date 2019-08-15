@@ -41,11 +41,16 @@ namespace AngryMonkey
             return current;
         }
 
-        private static string ProcessNav(NavItem n)
+        private static string ProcessNav(NavItem n, ActiveState active, string uid)
         {
             StringBuilder html = new StringBuilder();
-            html.AppendLine("<li class=\"sidenav-item\">");
 
+            if (n.UID == uid)
+                active = ActiveState.Self;
+
+            string activeClass = active == ActiveState.Self ? "active" : "";
+            string openClass = active == ActiveState.Child ? "open" : "";
+            html.AppendLine($"<li class=\"sidenav-item {openClass}\">");
             if (n.Items.Count > 0)
             {
                 html.AppendLine("<a href=\"javascript:void(0)\" class=\"sidenav-link sidenav-toggle\">");
@@ -53,7 +58,7 @@ namespace AngryMonkey
             else
             {
                 string link = n.Link.Replace(Nav.RootPath, string.Empty).Replace("\\", "/").Replace(".md", ".html");
-                html.AppendLine($"<a href=\"{link}\" class=\"sidenav-link\">");
+                html.AppendLine($"<a href=\"{link}\" class=\"sidenav-link {activeClass}\">");
             }
 
             html.AppendLine($"<div>{n.Title}</div>");
@@ -64,7 +69,7 @@ namespace AngryMonkey
                 html.AppendLine("<ul class=\"sidenav-menu\">");
                 foreach (NavItem item in n.Items)
                 {
-                    html.AppendLine(ProcessNav(item));
+                    html.AppendLine(ProcessNav(item, active, uid));
                 }
 
                 html.AppendLine("</ul>");
@@ -75,4 +80,6 @@ namespace AngryMonkey
             return html.ToString();
         }
     }
+
+
 }
