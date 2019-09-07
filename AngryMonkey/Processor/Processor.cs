@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Markdig.Extensions.Bootstrap;
 using WebMarkupMin.Core;
 
 namespace AngryMonkey
@@ -60,6 +61,7 @@ namespace AngryMonkey
                                              .UseGenericAttributes()
                                              .UseAutoIdentifiers(AutoIdentifierOptions.GitHub)
                                              .Build();
+
             for (int i = 0; i < MDs.Count; i++)
             {
                 StringBuilder nhtml = new StringBuilder();

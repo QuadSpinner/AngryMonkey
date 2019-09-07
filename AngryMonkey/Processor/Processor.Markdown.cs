@@ -56,12 +56,11 @@ namespace AngryMonkey
 
             foreach (string s in lines)
             {
-                bool f = s.Contains("@installing");
-                if (f)
-                {
-                    f = f;
-                }
-
+                //bool f = s.Contains("@installing");
+                //if (f)
+                //{
+                //    f = f;
+                //}
                 raw.AppendLine(ProcessLinks(s));
             }
 
@@ -123,7 +122,7 @@ namespace AngryMonkey
 
         internal void ProcessRootMD(string md)
         {
-            p = new MarkdownPipelineBuilder().UsePipeTables(new PipeTableOptions { RequireHeaderSeparator = true })
+            p = new MarkdownPipelineBuilder().UsePipeTables(new PipeTableOptions {RequireHeaderSeparator = true})
                                              .UseBootstrap()
                                              .UseYamlFrontMatter()
                                              .UseGenericAttributes()
@@ -220,7 +219,16 @@ namespace AngryMonkey
                     continue;
                 }
 
-                current.AppendLine(line);
+                if (line.StartsWith("^"))
+                {
+                    string include = $"{Nav.RootPath}Includes\\{line.Replace("^", string.Empty)}.md";
+                    if (File.Exists(include))
+                        current.AppendLine(File.ReadAllText(include));
+                }
+                else
+                {
+                    current.AppendLine(line);
+                }
             }
 
             sbs.Add(current);
@@ -290,7 +298,7 @@ namespace AngryMonkey
             bool first = false;
 
             foreach (string title in enumerable.Select(
-                x => x.Split(new[] { "--" }, StringSplitOptions.RemoveEmptyEntries).Last()))
+                x => x.Split(new[] {"--"}, StringSplitOptions.RemoveEmptyEntries).Last()))
             {
                 if (!first)
                 {
@@ -377,7 +385,6 @@ namespace AngryMonkey
 
             string dir = Nav.RootPath + TutorialsPath + id;
 
-
             // Individual example content
             StringBuilder sb = new StringBuilder();
 
@@ -395,9 +402,11 @@ namespace AngryMonkey
                 string image = images[index];
                 string text = texts[index];
                 sb.AppendLine("<div class=\"card\">");
-                sb.AppendLine($"<img class=\"card-img-top\" src=\"/images/tutorials/{id}/{Path.GetFileName(image)}\" />");
+                sb.AppendLine(
+                    $"<img class=\"card-img-top\" src=\"/images/tutorials/{id}/{Path.GetFileName(image)}\" />");
                 sb.AppendLine("<div class=\"card-footer\">");
-                sb.AppendLine($"<h4>{index + 1}. {Path.GetFileNameWithoutExtension(image).Split(new[] { "--" }, StringSplitOptions.RemoveEmptyEntries).Last()}</h4>");
+                sb.AppendLine(
+                    $"<h4>{index + 1}. {Path.GetFileNameWithoutExtension(image).Split(new[] {"--"}, StringSplitOptions.RemoveEmptyEntries).Last()}</h4>");
 
                 sb.AppendLine("<ul class=\"checklist\">");
 
@@ -411,14 +420,18 @@ namespace AngryMonkey
                 {
                     foreach (string[] split in data.Select(line => line.Split('=')))
                     {
-                        sb.AppendLine("<li><span class=\"property\">" + split[0].Trim() + "</span> <code>" + split[1] + "</code></li>");
+                        sb.AppendLine("<li><span class=\"property\">" + split[0].Trim() + "</span> <code>" + split[1] +
+                                      "</code></li>");
                     }
                 }
+
                 sb.AppendLine("</ul>");
 
                 if (File.Exists(dir + "\\" + Path.GetFileNameWithoutExtension(image) + "--Description.txt"))
-                    sb.AppendLine(Markdown.ToHtml(File.ReadAllText(dir + "\\" + Path.GetFileNameWithoutExtension(image) + "--Description.txt"),
-                                p));
+                    sb.AppendLine(Markdown.ToHtml(
+                                      File.ReadAllText(dir + "\\" + Path.GetFileNameWithoutExtension(image) +
+                                                       "--Description.txt"),
+                                      p));
                 else
                     sb.AppendLine("<p>CAPTION GOES HERE</p>");
                 sb.AppendLine("</div>");

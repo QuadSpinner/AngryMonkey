@@ -23,19 +23,19 @@ namespace AngryMonkey
         {
             Console.Title = Title;
 
-            Console.BackgroundColor = Color.FromArgb(255, 33, 33, 33);
+            //Console.BackgroundColor = Color.FromArgb(255, 33, 33, 33);
 
-            Console.Write(".", green);
-            Console.Write(".", gold);
-            Console.Write(".", blue);
-            Console.Write(".", purple);
-            Console.Write(".", red);
-            Console.Write(".", gray);
+            //Console.Write(".", green);
+            //Console.Write(".", gold);
+            //Console.Write(".", blue);
+            //Console.Write(".", purple);
+            //Console.Write(".", red);
+            //Console.Write(".", gray);
             Console.WindowHeight = Math.Min(40, Console.LargestWindowHeight);
             Console.WindowWidth = Math.Min(100, Console.LargestWindowHeight);
             Console.Clear();
 
-            DrawTitle(Title, gray);
+            DrawTitle(Title, Color.Black);
         }
 
         internal static void DrawLine(string section)
