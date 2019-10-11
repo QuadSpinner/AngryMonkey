@@ -47,10 +47,14 @@ namespace AngryMonkey
                 md.AppendLine("---\n\n");
                 md.AppendLine($"**Released on {manifest.ReleaseDate:dd MMMM yyyy}**\n");
 
-                md.AppendLine($"[Download Full Installer]({manifest.URL})\n");
+                md.AppendLine($"<div class=\"btn-group\" role=\"group\">");
+
+                md.AppendLine($"<a href=\"{manifest.URL}\" class=\"btn btn-dark\">Download Full Installer<br />{manifest.Size / 1024.0 / 1024.0:F}MB</a>");
+
                 if (manifest.PatchSize > 0)
-                    md.AppendLine($"[Download Patch]({manifest.PatchURL})\n");
-                md.AppendLine("</div></div>");
+                    md.AppendLine($"<a href=\"{manifest.PatchURL}\" class=\"btn btn-dark\">Download Patch<br />{manifest.PatchSize / 1024.0 / 1024.0:F}MB</a>");
+                
+                md.AppendLine("</div></div></div>");
 
                 md.AppendLine("<br><h6 class=\"ml-2\">Release Notes</h6>");
 
@@ -59,7 +63,7 @@ namespace AngryMonkey
                 md.AppendLine("<div class=\"card-body release-note\">\n");
                 md.AppendLine(manifest.FullDescription);
                 md.AppendLine("\n</div></div>");
-                
+
                 File.WriteAllText($"{Path.GetDirectoryName(x)}\\{version}.md", md.ToString());
             }
 
