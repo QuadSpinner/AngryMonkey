@@ -1,7 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Xml.Serialization;
+using Gaea.Internals.Online;
 
 namespace AngryMonkey
 {
@@ -11,7 +14,8 @@ namespace AngryMonkey
         {
             IEnumerable<string> dirs = Directory.EnumerateDirectories(dir);
 
-            string dirName = Nav.tt.ToTitleCase(dir.Trim('\\').Split('\\').Last());
+            string dirName = dir.Contains("Bleeding") ? dir.Trim('\\').Split('\\').Last()
+                                 : Nav.tt.ToTitleCase(dir.Trim('\\').Split('\\').Last());
 
             if (dirName.Contains("-"))
             {
@@ -20,7 +24,49 @@ namespace AngryMonkey
 
             NavItem current = new NavItem(dirName);
 
+            string[] xml = Directory.GetFiles(dir, "*.update");
+
+            XmlSerializer xs = new XmlSerializer(typeof(UpdateManifest));
+
+            foreach (string x in xml)
+            {
+                UpdateManifest manifest;
+                using (var fs = new FileStream(x, FileMode.Open, FileAccess.Read, FileShare.Read))
+                {
+                    manifest = xs.Deserialize(fs) as UpdateManifest;
+                }
+
+                string version = Version.Parse(manifest.Version).ToString(x.Contains("Bleeding") || x.Contains("Preview") ? 4 : 3);
+                string versionSafe = version.Replace(".", "_");
+
+                StringBuilder md = new StringBuilder();
+
+                md.AppendLine("---");
+                md.AppendLine("uid: gaea_" + versionSafe);
+                md.AppendLine("title: Gaea " + version);
+                md.AppendLine("---\n\n");
+                md.AppendLine($"**Released on {manifest.ReleaseDate:dd MMMM yyyy}**\n");
+
+                md.AppendLine($"[Download Full Installer]({manifest.URL})\n");
+                if (manifest.PatchSize > 0)
+                    md.AppendLine($"[Download Patch]({manifest.PatchURL})\n");
+                md.AppendLine("</div></div>");
+
+                md.AppendLine("<br><h6 class=\"ml-2\">Release Notes</h6>");
+
+
+                md.AppendLine("<div class=\"card\">");
+                md.AppendLine("<div class=\"card-body release-note\">\n");
+                md.AppendLine(manifest.FullDescription);
+                md.AppendLine("\n</div></div>");
+                
+                File.WriteAllText($"{Path.GetDirectoryName(x)}\\{version}.md", md.ToString());
+            }
+
             string[] mds = Directory.GetFiles(dir, "*.md");
+
+            if (dir.Contains("changelogs"))
+                mds = mds.OrderByDescending(x => x).ToArray();
 
             foreach (string md in mds.Where(md => !md.ToLower().EndsWith(".params.md") && !md.Contains("--")))
             {

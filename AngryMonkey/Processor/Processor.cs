@@ -84,7 +84,6 @@ namespace AngryMonkey
 
                 nhtml.AppendLine("</ul></div>");
 
-
                 navHtml = minifier.Minify(nhtml.ToString()).MinifiedContent;
 
                 ProcessMD(MDs[i]);
