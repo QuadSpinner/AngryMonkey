@@ -62,14 +62,14 @@ namespace AngryMonkey
                 md.AppendLine("<div class=\"card\">");
                 md.AppendLine("<div class=\"card-body release-note\">\n");
                 md.AppendLine(manifest.FullDescription);
-                md.AppendLine("\n</div></div>");
+                md.AppendLine("\n");
 
                 File.WriteAllText($"{Path.GetDirectoryName(x)}\\{version}.md", md.ToString());
             }
 
             string[] mds = Directory.GetFiles(dir, "*.md");
 
-            if (dir.Contains("changelogs"))
+            if (dir.Contains("Changelogs"))
                 mds = mds.OrderByDescending(x => x).ToArray();
 
             foreach (string md in mds.Where(md => !md.ToLower().EndsWith(".params.md") && !md.Contains("--")))

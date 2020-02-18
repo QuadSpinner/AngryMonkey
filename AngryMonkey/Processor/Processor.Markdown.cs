@@ -294,22 +294,22 @@ namespace AngryMonkey
 
             TabStrip.AppendLine(
                 "<br><h6 class=\"ml-2\">Examples</h6><div class=\"examples\">" +
-                "<div class=\"nav-tabs-top mb-4\"><ul class=\"nav nav-sm nav-tabs\">");
+                "<div class=\"nav-tabs-left mb-4\"><ul class=\"nav nav-sm nav-tabs\">");
             bool first = false;
 
             foreach (string title in enumerable.Select(
-                x => x.Split(new[] {"--"}, StringSplitOptions.RemoveEmptyEntries).Last()))
+                x => x.Split(new[] {"--"}, StringSplitOptions.RemoveEmptyEntries).Last().Replace("-", " ")))
             {
                 if (!first)
                 {
                     TabStrip.AppendLine(
-                        $"<li class=\"nav-item\"><a class=\"nav-link active\" data-toggle=\"tab\" href=\"#ex-{title.Replace(" ", "-")}\">{title}</a></li>");
+                        $"<li class=\"nav-item\"><a class=\"nav-link active\" data-toggle=\"tab\" href=\"#ex-{title.Replace(" ", "-")}\">{title.Replace("-", " ")}</a></li>");
                     first = true;
                 }
                 else
                 {
                     TabStrip.AppendLine(
-                        $"<li class=\"nav-item\"><a class=\"nav-link\" data-toggle=\"tab\" href=\"#ex-{title.Replace(" ", "-")}\">{title}</a></li>");
+                        $"<li class=\"nav-item\"><a class=\"nav-link\" data-toggle=\"tab\" href=\"#ex-{title.Replace(" ", "-")}\">{title.Replace("-", " ")}</a></li>");
                 }
 
                 titles.Add(title);
@@ -342,7 +342,7 @@ namespace AngryMonkey
                     string text = texts[index];
                     sb.AppendLine("<div class=\"card\">");
                     sb.AppendLine(
-                        $"<img   class=\"card-img-top\" src=\"/images/ref/{Path.GetFileName(image)}\" />");
+                        $"<img   class=\"card-img-top zoom\" src=\"/images/ref/{Path.GetFileName(image)}\" />");
                     sb.AppendLine("<div class=\"card-footer\"><ul>");
                     foreach (string[] split in File.ReadAllLines(text).Select(line => line.Split('=')))
                     {

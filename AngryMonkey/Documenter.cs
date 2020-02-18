@@ -1,10 +1,10 @@
-﻿using AngryMonkey.Objects;
-using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using AngryMonkey.Objects;
+using Newtonsoft.Json;
 
 namespace AngryMonkey
 {
@@ -14,10 +14,6 @@ namespace AngryMonkey
 
         public void ProcessHives()
         {
-            C.SetConsoleAppearance();
-
-            Console.WriteLine("          __\r\n     w  c(..)o   (\r\n      \\__(-)    __)\r\n          /\\   (\r\n         /(_)___)\r\n         w /|\r\n          | \\\r\n         m  m");
-
             if (MapIdentifiers()) return;
 
             if (Hives == null || Hives.Count == 0)
@@ -25,27 +21,26 @@ namespace AngryMonkey
                 if (File.Exists(Nav.RootPath + "\\hives.json"))
                 {
                     Hives = JsonConvert.DeserializeObject<List<Hive>>(File.ReadAllText(Nav.RootPath + "\\hives.json"));
-                    C.Write("\nROOT: ", C.gray);
-                    C.WriteLine(Nav.RootPath, C.gold);
+                    Console.Write("\nROOT: ");
+                    Console.WriteLine(Nav.RootPath);
                 }
                 else
                 {
-                    C.WriteLine("No HIVES were specified. HIVES.JSON is missing from the root.", C.red);
-                    C.WriteLine("\nThe monkey is angry!\nBUILD CANCELLED", C.red);
+                    Console.WriteLine("No HIVES were specified. HIVES.JSON is missing from the root.");
+                    Console.WriteLine("\nThe monkey is angry!\nBUILD CANCELLED");
                     return;
                 }
             }
 
-            C.WriteLine("", C.gray);
-
-            C.DrawLine("Hives", C.blue);
-
             if (File.Exists(Nav.RootPath + "source\\index.md"))
             {
-                C.Write("Processing Root Document...", C.gray);
+                Console.Write("Processing Root Document...");
                 StringBuilder superNav = new StringBuilder();
+                superNav.AppendLine("<ul>");
                 foreach (Hive h in Hives)
-                    superNav.AppendLine($"<div class=\"nav-item\"><a class=\"nav-link\" href=\"/{h.BaseItem.Link}\">{h.BaseItem.Title}</a></div>");
+                    superNav.AppendLine(
+                        $"<li class=\"nav-item\"><a class=\"nav-link\" href=\"/{h.BaseItem.Link}\">{h.BaseItem.Title}</a></li>");
+                superNav.AppendLine("</ul>");
 
                 Processor p = new Processor(Nav.RootPath) { MainNavHTML = superNav.ToString() };
                 p.ProcessRootMD(Nav.RootPath + "source\\index.md");
@@ -54,7 +49,7 @@ namespace AngryMonkey
 
             foreach (Hive hive in Hives)
             {
-                C.Write($"Processing {hive.Path}...", C.gray);
+                Console.Write($"Processing {hive.Path}...");
 
                 string path = Nav.RootPath + "docs\\" + hive.Path;
                 try
@@ -64,17 +59,21 @@ namespace AngryMonkey
                 }
                 catch (Exception)
                 {
-                    C.WriteLine("\n(ERROR) Existing directory " + path + " could not be deleted.\n\nSKIPPING THIS HIVE!", C.red);
+                    Console.WriteLine("\n(ERROR) Existing directory " + path +
+                                      " could not be deleted.\n\nSKIPPING THIS HIVE!");
                     continue;
                 }
 
                 StringBuilder superNav = new StringBuilder();
+                superNav.AppendLine("<ul>");
                 foreach (Hive h in Hives)
                 {
+
                     superNav.AppendLine(h.Path == hive.Path
-                                            ? $"<div class=\"nav-item active\"><a class=\"nav-link\" href=\"/{h.BaseItem.Link}\">{h.BaseItem.Title}</a></div>"
-                                            : $"<div class=\"nav-item\"><a class=\"nav-link\" href=\"/{h.BaseItem.Link}\">{h.BaseItem.Title}</a></div>");
+                                            ? $"<li class=\"nav-item active\"><a class=\"nav-link\" href=\"/{h.BaseItem.Link}\">{h.BaseItem.Title}</a></li>"
+                                            : $"<li class=\"nav-item\"><a class=\"nav-link\" href=\"/{h.BaseItem.Link}\">{h.BaseItem.Title}</a></li>");
                 }
+                superNav.AppendLine("</ul>");
 
                 Processor p = new Processor(Nav.RootPath)
                 {
@@ -90,18 +89,14 @@ namespace AngryMonkey
                 OK();
             }
 
-            C.WriteLine("", C.gray);
-            C.WriteLine("The monkey is happy!\nGENERATION COMPLETE", C.green);
-            C.WriteLine("", C.gray);
+            Console.WriteLine("The monkey is happy!\nGENERATION COMPLETE");
         }
 
         private static bool MapIdentifiers()
         {
             if (Nav.identifiers.Count == 0)
             {
-                C.DrawLine("Identifiers", C.blue);
-
-                C.Write("Mapping identifiers...", C.gray);
+                Console.Write("Mapping identifiers...");
                 Nav.GetIdentifiers(Nav.RootPath + "source\\");
 
                 List<string> uids = new List<string>();
@@ -111,9 +106,9 @@ namespace AngryMonkey
                     if (item.UID == null)
                     {
                         if (!bad)
-                            C.WriteLine("\n(WARNING)\nMissing UIDs!", C.gold);
+                            Console.WriteLine("\n(WARNING)\nMissing UIDs!");
 
-                        C.WriteLine($"    {item.Title} ({item.Link})", C.blue);
+                        Console.WriteLine($"    {item.Title} ({item.Link})");
                         bad = true;
                     }
 
@@ -123,7 +118,7 @@ namespace AngryMonkey
                 int duplicates = uids.Count - uids.Distinct().Count();
                 if (duplicates > 0)
                 {
-                    C.WriteLine($"\n(ERROR)\n{duplicates} duplicate(s) found!", C.red);
+                    Console.WriteLine($"\n(ERROR)\n{duplicates} duplicate(s) found!");
                     List<string> dupes = uids.GroupBy(x => x)
                                              .Where(g => g.Count() > 1)
                                              .Select(y => y.Key)
@@ -131,33 +126,30 @@ namespace AngryMonkey
 
                     foreach (string dupe in dupes.Distinct())
                     {
-                        C.WriteLine($"    {dupe ?? "<null>"}", C.gold);
+                        Console.WriteLine($"    {dupe ?? "<null>"}");
                         foreach (NavItem n in Nav.identifiers.Where(nn => nn.UID == dupe))
                         {
-                            C.WriteLine($"       {n.Title} :: {n.Link}", C.blue);
+                            Console.WriteLine($"       {n.Title} :: {n.Link}");
                         }
                     }
 
-                    C.WriteLine("\nThe monkey is angry!\nBUILD CANCELLED", C.red);
+                    Console.WriteLine("\nThe monkey is angry!\nBUILD CANCELLED");
                     return true;
                 }
 
                 if (!bad)
                 {
                     OK();
-                    C.Write(Nav.identifiers.Count.ToString(), C.gold);
-                    C.WriteLine(" unique identifiers.", C.gray);
-                    C.Write(Nav.identifiers.Count(n => !n.Show).ToString(), C.gold);
-                    C.WriteLine(" hidden identifiers.", C.gray);
+                    Console.Write(Nav.identifiers.Count.ToString());
+                    Console.WriteLine(" unique identifiers.");
+                    Console.Write(Nav.identifiers.Count(n => !n.Show).ToString());
+                    Console.WriteLine(" hidden identifiers.");
                 }
             }
 
             return false;
         }
 
-        private static void OK()
-        {
-            C.WriteLine("OK", C.green);
-        }
+        private static void OK() { Console.WriteLine("OK"); }
     }
 }
