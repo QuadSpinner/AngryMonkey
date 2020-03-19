@@ -95,7 +95,7 @@ namespace AngryMonkey
                 output.AppendLine(ProcessTutorials(md));
             }
 
-            html = html.Replace("<!--REPLACE--BODY-->", $"{bread}<br>{output}");
+            html = html.Replace("<!--REPLACE--BODY-->", $"{bread}<p class=\"title\">{title}</p>{output}");
             html = html.Replace("%%TITLE%%", title);
             //html = html.Replace("<!--REPLACE--BREADCRUMBS-->", bread.ToString());
 
@@ -184,31 +184,6 @@ namespace AngryMonkey
             string[] lines = File.ReadAllLines(s);
             List<string> titles = new List<string>();
 
-            StringBuilder TabStrip = new StringBuilder();
-
-            TabStrip.AppendLine(
-                "<br><h6 class=\"ml-2\">Node Properties</h6><div class=\"nav-tabs-top mb-4\"><ul class=\"nav nav-sm nav-tabs\">");
-            bool first = false;
-            foreach (string title in lines.Where(l => l.StartsWith("# ["))
-                                          .Select(line => line.Split(']')[0].Split('[')[1]))
-            {
-                if (!first)
-                {
-                    TabStrip.AppendLine(
-                        $"<li class=\"nav-item\"><a class=\"nav-link active\" data-toggle=\"tab\" href=\"#params-{title.Replace(" ", "-")}\">{title}</a></li>");
-                    first = true;
-                }
-                else
-                {
-                    TabStrip.AppendLine(
-                        $"<li class=\"nav-item\"><a class=\"nav-link\" data-toggle=\"tab\" href=\"#params-{title.Replace(" ", "-")}\">{title}</a></li>");
-                }
-
-                titles.Add(title);
-            }
-
-            TabStrip.AppendLine("</ul>");
-
             StringBuilder current = new StringBuilder();
             foreach (string line in lines)
             {
@@ -240,38 +215,11 @@ namespace AngryMonkey
             {
                 string mdd = sbs.Last().ToString().Trim('{').Trim('}');
 
-                html.AppendLine("<br><h6 class=\"ml-2\">Node Properties</h6>");
-                html.AppendLine("<div class=\"card\"><div class=\"card-body params\">");
+                html.AppendLine("<br><h3>Node Properties</h3>");
+                html.AppendLine("<div class=\"params\">");
                 html.AppendLine(Markdown.ToHtml(mdd, p)
                                         .Replace("class=\"table\"", "class=\"table table-borderless\""));
-                html.AppendLine("</div></div>");
-            }
-            else
-            {
-                html.AppendLine(TabStrip.ToString());
-
-                html.AppendLine("<div class=\"tab-content\">");
-
-                int titleIndex = 0;
-                foreach (StringBuilder sb in sbs)
-                {
-                    if (sb.Length > 1)
-                    {
-                        string title = titles[titleIndex];
-                        html.AppendLine(
-                            titleIndex == 0
-                                ? $"<div class=\"tab-pane params fade active show\" id=\"params-{title.Replace(" ", "-")}\"><div class=\"card-body\">"
-                                : $"<div class=\"tab-pane params fade show\" id=\"params-{title.Replace(" ", "-")}\"><div class=\"card-body\">");
-
-                        string mdd = sb.ToString().Trim('{').Trim('}');
-                        html.AppendLine(Markdown.ToHtml(mdd, p)
-                                                .Replace("class=\"table\"", "class=\"table table-borderless\""));
-                        html.AppendLine("</div></div>");
-                        titleIndex++;
-                    }
-                }
-
-                html.AppendLine("</div></div>"); //! Close TAB-CONTENT / NAV
+                html.AppendLine("</div>");
             }
 
             return html.ToString();
