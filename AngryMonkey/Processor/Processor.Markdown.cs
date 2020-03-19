@@ -394,47 +394,47 @@ namespace AngryMonkey
 
         public void ProcessChangelogs(string json = "Z:\\Git\\Gaea\\Gaea-Docs\\changelogs.json")
         {
-            Changelog[] logs = Changelog.FromJson(File.ReadAllText(json));
+            //Changelog[] logs = Changelog.FromJson(File.ReadAllText(json));
 
-            StringBuilder all = new StringBuilder();
+            //StringBuilder all = new StringBuilder();
 
-            string card_template = File.ReadAllText(Nav.RootPath + CardTemplate);
+            ////string card_template = File.ReadAllText(Nav.RootPath + CardTemplate);
 
-            foreach (Changelog log in logs)
-            {
-                string card = card_template.Replace("<!--HEADER-->",
-                                                    $"Gaea {log.Version}<br><small class=\"text-muted\">{Convert.ToDateTime(log.PubDate):yyyy MMMM dd}</small>");
+            //foreach (Changelog log in logs)
+            //{
+            //    string card = card_template.Replace("<!--HEADER-->",
+            //                                        $"Gaea {log.Version}<br><small class=\"text-muted\">{Convert.ToDateTime(log.PubDate):yyyy MMMM dd}</small>");
 
-                if (log.Url == null || string.IsNullOrEmpty(log.Url.ToString()))
-                {
-                    card = card.Replace("<!--FOOTER-->", "This version has been archived.");
-                }
-                else
-                {
-                    card = card.Replace("<!--FOOTER-->",
-                                        $"<a href=\"{log.Url}\" class=\"btn btn-sm btn-primary\">Download {log.Version}</a>");
-                }
+            //    if (log.Url == null || string.IsNullOrEmpty(log.Url.ToString()))
+            //    {
+            //        card = card.Replace("<!--FOOTER-->", "This version has been archived.");
+            //    }
+            //    else
+            //    {
+            //        card = card.Replace("<!--FOOTER-->",
+            //                            $"<a href=\"{log.Url}\" class=\"btn btn-sm btn-primary\">Download {log.Version}</a>");
+            //    }
 
-                StringBuilder cl = new StringBuilder();
-                cl.AppendLine("<ul class=\"changelog\">");
-                foreach (string[] split in log.Notes.Select(note => note.Split(']')))
-                {
-                    string type = split[0].Replace("[", "");
-                    cl.AppendLine($"<li class=\"{type.ToLower()}\"><span>{type}</span> {split[1]}</li>");
-                }
+            //    StringBuilder cl = new StringBuilder();
+            //    cl.AppendLine("<ul class=\"changelog\">");
+            //    foreach (string[] split in log.Notes.Select(note => note.Split(']')))
+            //    {
+            //        string type = split[0].Replace("[", "");
+            //        cl.AppendLine($"<li class=\"{type.ToLower()}\"><span>{type}</span> {split[1]}</li>");
+            //    }
 
-                cl.AppendLine("</ul>");
+            //    cl.AppendLine("</ul>");
 
-                all.AppendLine(card.Replace("<!--BODY-->", cl.ToString()));
-            }
+            //    all.AppendLine(card.Replace("<!--BODY-->", cl.ToString()));
+            //}
 
-            string html = raw_html;
+            //string html = raw_html;
 
-            html = html.Replace("<!--REPLACE--NAV-->", navHtml);
+            //html = html.Replace("<!--REPLACE--NAV-->", navHtml);
 
-            html = html.Replace("<!--REPLACE--BODY-->", all.ToString());
+            //html = html.Replace("<!--REPLACE--BODY-->", all.ToString());
 
-            File.WriteAllText(Nav.RootPath + dst + "changelogs.html", minifier.Minify(html).MinifiedContent);
+            //File.WriteAllText(Nav.RootPath + dst + "changelogs.html", minifier.Minify(html).MinifiedContent);
         }
     }
 }

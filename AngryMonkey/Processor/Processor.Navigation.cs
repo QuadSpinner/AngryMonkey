@@ -36,7 +36,7 @@ namespace AngryMonkey
                     manifest = xs.Deserialize(fs) as UpdateManifest;
                 }
 
-                string version = Version.Parse(manifest.Version).ToString(x.Contains("Bleeding") || x.Contains("Preview") ? 4 : 3);
+                string version = Version.Parse(manifest.Version).ToString(4);
                 string versionSafe = version.Replace(".", "_");
 
                 StringBuilder md = new StringBuilder();
@@ -47,22 +47,18 @@ namespace AngryMonkey
                 md.AppendLine("---\n\n");
                 md.AppendLine($"**Released on {manifest.ReleaseDate:dd MMMM yyyy}**\n");
 
-                md.AppendLine("<div class=\"btn-group\" role=\"group\">");
+                //md.AppendLine("<div class=\"btn-group\" role=\"group\">");
 
-                md.AppendLine($"<a href=\"{manifest.URL}\" class=\"btn btn-dark\">Download Full Installer<br />{manifest.Size / 1024.0 / 1024.0:F}MB</a>");
+                md.AppendLine($"<a href=\"{manifest.URL}\">Download Full Installer {manifest.Size / 1024.0 / 1024.0:F}MB</a> <br>");
 
                 if (manifest.PatchSize > 0)
-                    md.AppendLine($"<a href=\"{manifest.PatchURL}\" class=\"btn btn-dark\">Download Patch<br />{manifest.PatchSize / 1024.0 / 1024.0:F}MB</a>");
+                    md.AppendLine($"<a href=\"{manifest.PatchURL}\">Download Patch {manifest.PatchSize / 1024.0 / 1024.0:F}MB</a> <br>");
                 
-                md.AppendLine("</div></div></div>");
-
-                md.AppendLine("<br><h6 class=\"ml-2\">Release Notes</h6>");
-
-
-                md.AppendLine("<div class=\"card\">");
-                md.AppendLine("<div class=\"card-body release-note\">\n");
-                md.AppendLine(manifest.FullDescription);
                 md.AppendLine("\n");
+
+                md.AppendLine("<div class=\"release-note\">\n");
+                md.AppendLine(manifest.FullDescription);
+                md.AppendLine("</div>");
 
                 File.WriteAllText($"{Path.GetDirectoryName(x)}\\{version}.md", md.ToString());
             }
