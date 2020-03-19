@@ -42,7 +42,7 @@ namespace AngryMonkey
 
             bread.AppendLine("<ol class=\"breadcrumb\">");
             bread.AppendLine(
-                "<li class=\"breadcrumb-item\"><a href=\"/index.html\"><i class=\"ion ion-ios-home d-block\"></i></a></li>");
+                "<li class=\"breadcrumb-item\"><a href=\"/index.html\">Home</a></li>");
             bread.AppendLine($"<li class=\"breadcrumb-item\"><a href=\"{BaseItem.Link}\">{BaseItem.Title}</a></li>");
             if (navs.Items.Any(i => i.Items.Any(x => x.Title == title)))
                 bread.AppendLine(
@@ -66,11 +66,11 @@ namespace AngryMonkey
 
             StringBuilder output = new StringBuilder();
 
-            output.AppendLine("<div class=\"card\">");
-            output.AppendLine("<div class=\"card-header\"><!--REPLACE--BREADCRUMBS--></div>");
-            output.AppendLine("<div class=\"card-body\">");
+            //output.AppendLine("<div class=\"card\">");
+            //output.AppendLine("<div class=\"card-header\"><!--REPLACE--BREADCRUMBS--></div>");
+            //output.AppendLine("<div class=\"card-body\">");
             output.AppendLine(Markdown.ToHtml(raw.ToString(), p));
-            output.AppendLine("</div></div>");
+            //output.AppendLine("</div></div>");
 
             if (ProcessProceduralFiles)
             {
@@ -95,22 +95,23 @@ namespace AngryMonkey
                 output.AppendLine(ProcessTutorials(md));
             }
 
-            html = html.Replace("<!--REPLACE--BODY-->", output.ToString());
+            html = html.Replace("<!--REPLACE--BODY-->", $"{bread}<br>{output}");
             html = html.Replace("%%TITLE%%", title);
-            html = html.Replace("<!--REPLACE--BREADCRUMBS-->", bread.ToString());
+            //html = html.Replace("<!--REPLACE--BREADCRUMBS-->", bread.ToString());
 
             try
             {
                 string subpath = Path.GetDirectoryName(md.Replace(Nav.RootPath, Nav.RootPath + dst))
                                      .Replace("source\\", "");
                 if (!subpath.EndsWith("\\"))
-                    subpath = subpath + "\\";
+                    subpath += "\\";
 
                 subpath = Nav.ReplaceNumbers(subpath);
 
                 Directory.CreateDirectory(subpath);
 
-                File.WriteAllText(subpath + name + ".html", minifier.Minify(html).MinifiedContent);
+                File.WriteAllText(subpath + name + ".html", html);
+                // File.WriteAllText(subpath + name + ".html", minifier.Minify(html).MinifiedContent);
             }
             catch (IOException)
             {
@@ -122,7 +123,7 @@ namespace AngryMonkey
 
         internal void ProcessRootMD(string md)
         {
-            p = new MarkdownPipelineBuilder().UsePipeTables(new PipeTableOptions {RequireHeaderSeparator = true})
+            p = new MarkdownPipelineBuilder().UsePipeTables(new PipeTableOptions { RequireHeaderSeparator = true })
                                              .UseBootstrap()
                                              .UseYamlFrontMatter()
                                              .UseGenericAttributes()
@@ -145,10 +146,10 @@ namespace AngryMonkey
 
             StringBuilder output = new StringBuilder();
 
-            output.AppendLine("<div class=\"card\">");
-            output.AppendLine("<div class=\"card-body\">");
+            //output.AppendLine("<div class=\"card\">");
+            //output.AppendLine("<div class=\"card-body\">");
             output.AppendLine(Markdown.ToHtml(raw.ToString(), p));
-            output.AppendLine("</div></div>");
+            //output.AppendLine("</div></div>");
             html = html.Replace("%%TITLE%%", "Home");
             html = html.Replace("<!--REPLACE--BODY-->", output.ToString());
             try
@@ -298,7 +299,7 @@ namespace AngryMonkey
             bool first = false;
 
             foreach (string title in enumerable.Select(
-                x => x.Split(new[] {"--"}, StringSplitOptions.RemoveEmptyEntries).Last().Replace("-", " ")))
+                x => x.Split(new[] { "--" }, StringSplitOptions.RemoveEmptyEntries).Last().Replace("-", " ")))
             {
                 if (!first)
                 {
@@ -406,7 +407,7 @@ namespace AngryMonkey
                     $"<img class=\"card-img-top\" src=\"/images/tutorials/{id}/{Path.GetFileName(image)}\" />");
                 sb.AppendLine("<div class=\"card-footer\">");
                 sb.AppendLine(
-                    $"<h4>{index + 1}. {Path.GetFileNameWithoutExtension(image).Split(new[] {"--"}, StringSplitOptions.RemoveEmptyEntries).Last()}</h4>");
+                    $"<h4>{index + 1}. {Path.GetFileNameWithoutExtension(image).Split(new[] { "--" }, StringSplitOptions.RemoveEmptyEntries).Last()}</h4>");
 
                 sb.AppendLine("<ul class=\"checklist\">");
 

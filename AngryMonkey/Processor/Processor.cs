@@ -1,18 +1,18 @@
-﻿using Markdig;
-using Markdig.Extensions.AutoIdentifiers;
-using Markdig.Extensions.Tables;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using Markdig.Extensions.Bootstrap;
+using System.Threading.Tasks;
+using Markdig;
+using Markdig.Extensions.AutoIdentifiers;
+using Markdig.Extensions.Tables;
 using WebMarkupMin.Core;
 
 namespace AngryMonkey
 {
     public partial class Processor
     {
-        public const string BodyTemplate = @"_template\index.1.html";
+        public const string BodyTemplate = @"_template\index.2.html";
 
         internal NavItem BaseItem = new NavItem("User Guide", "guide.html") { UID = "guide" };
 
@@ -62,32 +62,53 @@ namespace AngryMonkey
                                              .UseAutoIdentifiers(AutoIdentifierOptions.GitHub)
                                              .Build();
 
-            for (int i = 0; i < MDs.Count; i++)
-            {
-                StringBuilder nhtml = new StringBuilder();
-                nhtml.AppendLine("<div id=\"layout-sidenav\" class=\"layout-sidenav sidenav sidenav-vertical bg-sidenav-theme\">" +
-                                 $"<ul class=\"sidenav-inner py-1 {BaseItem.UID}\">");
+            Parallel.For(0,
+                         MDs.Count,
+                         i =>
+                         {
+                             StringBuilder nhtml = new StringBuilder();
 
-                foreach (NavItem item in navs.Items)
-                {
-                    ActiveState active = ActiveState.None;
-                    string uid = Nav.GetNavItem(MDs[i]).UID;
-               
-         
-                    if (item.Items.Any() && item.Items.Any(t => t.UID == uid) 
-                        || item.Items.Any() && item.Items.Any(t => t.Items.Any() && t.Items.Any(x => x.Items.Any(y => y.UID == uid))))
-                    {
-                        active = ActiveState.Child;
-                    }
-                    nhtml.AppendLine(ProcessNav(item, active, uid));
-                }
+                             foreach (NavItem item in navs.Items)
+                             {
+                                 ActiveState active = ActiveState.None;
+                                 string uid = Nav.GetNavItem(MDs[i]).UID;
+                                 string nid = Nav.SanitizeFilename(item.Title).Replace(" ", string.Empty);
 
-                nhtml.AppendLine("</ul></div>");
+                                 if (item.Items.Any(t => t.UID == uid))
+                                 {
+                                     active = ActiveState.Child;
+                                     nhtml.AppendLine("<li class=\"panel expanded active\">" +
+                                                      $"<a class=\"area\" href=\"#{nid}\" data-parent=\"#main-nav\" data-toggle=\"collapse\">{item.Title}</a>");
+                                     nhtml.AppendLine($"<ul id=\"{nid}\" class=\"collapse in\">");
+                                 }
+                                 else
+                                 {
+                                     nhtml.AppendLine("<li class=\"panel collapsed\">" +
+                                                      $"<a class=\"area\" href=\"#{nid}\" data-parent=\"#main-nav\" data-toggle=\"collapse\">{item.Title}</a>");
+                                     nhtml.AppendLine($"<ul id=\"{nid}\" class=\"collapse\">");
+                                 }
 
-                navHtml = minifier.Minify(nhtml.ToString()).MinifiedContent;
+                                 foreach (NavItem navItem in item.Items)
+                                 {
 
-                ProcessMD(MDs[i]);
-            }
+                                     if (active == ActiveState.Child && uid == navItem.UID)
+                                     {
+                                         nhtml.AppendLine(ProcessNav(navItem, active, uid));
+                                     }
+                                     else
+                                     {
+                                         nhtml.AppendLine(ProcessNav(navItem, ActiveState.None, uid));
+                                     }
+                                 }
+
+                                 nhtml.AppendLine("</ul></li></div>");
+                             }
+
+
+                             navHtml = minifier.Minify(nhtml.ToString()).MinifiedContent;
+
+                             ProcessMD(MDs[i]);
+                         });
 
             //! Uncomment to use parallel processing. Useful when you have hundreds of files.
             // Parallel.For(0, MDs.Count, i => ProcessMD(MDs[i]));

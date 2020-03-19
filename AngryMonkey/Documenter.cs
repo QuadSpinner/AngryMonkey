@@ -65,15 +65,15 @@ namespace AngryMonkey
                 }
 
                 StringBuilder superNav = new StringBuilder();
-                superNav.AppendLine("<ul>");
+            
                 foreach (Hive h in Hives)
                 {
 
                     superNav.AppendLine(h.Path == hive.Path
-                                            ? $"<li class=\"nav-item active\"><a class=\"nav-link\" href=\"/{h.BaseItem.Link}\">{h.BaseItem.Title}</a></li>"
-                                            : $"<li class=\"nav-item\"><a class=\"nav-link\" href=\"/{h.BaseItem.Link}\">{h.BaseItem.Title}</a></li>");
+                                            ? $"<li class=\"active\"><a href=\"/{h.BaseItem.Link}\">{h.BaseItem.Title}</a></li>"
+                                            : $"<li><a href=\"/{h.BaseItem.Link}\">{h.BaseItem.Title}</a></li>");
                 }
-                superNav.AppendLine("</ul>");
+              
 
                 Processor p = new Processor(Nav.RootPath)
                 {

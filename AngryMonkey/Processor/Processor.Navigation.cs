@@ -47,7 +47,7 @@ namespace AngryMonkey
                 md.AppendLine("---\n\n");
                 md.AppendLine($"**Released on {manifest.ReleaseDate:dd MMMM yyyy}**\n");
 
-                md.AppendLine($"<div class=\"btn-group\" role=\"group\">");
+                md.AppendLine("<div class=\"btn-group\" role=\"group\">");
 
                 md.AppendLine($"<a href=\"{manifest.URL}\" class=\"btn btn-dark\">Download Full Installer<br />{manifest.Size / 1024.0 / 1024.0:F}MB</a>");
 
@@ -99,31 +99,28 @@ namespace AngryMonkey
                 active = ActiveState.Self;
 
             string activeClass = active == ActiveState.Self ? "active" : "";
-            string openClass = active == ActiveState.Child ? "open" : "";
-            html.AppendLine($"<li class=\"sidenav-item {openClass}\">");
-            if (n.Items.Count > 0)
-            {
-                html.AppendLine("<a href=\"javascript:void(0)\" class=\"sidenav-link sidenav-toggle\">");
-            }
-            else
+            //string openClass = active == ActiveState.Child ? "open" : "";
+            html.AppendLine($"<li class=\"{activeClass}\">");
+            //if (n.Items.Count > 0)
+            //{
+            //    html.AppendLine("<a href=\"javascript:void(0)\" class=\"sidenav-link sidenav-toggle\">");
+            //}
+            //else
             {
                 string link = n.Link.Replace(Nav.RootPath, string.Empty).Replace("\\", "/").Replace(".md", ".html");
-                html.AppendLine($"<a href=\"{link}\" class=\"sidenav-link {activeClass}\">");
+                html.AppendLine($"<a href=\"{link}\">{n.Title}</a>");
             }
 
-            html.AppendLine($"<div>{n.Title}</div>");
-            html.AppendLine("</a>");
+            //if (n.Items.Count > 0)
+            //{
+            //    html.AppendLine("<ul class=\"sidenav-menu\">");
+            //    foreach (NavItem item in n.Items)
+            //    {
+            //        html.AppendLine(ProcessNav(item, active, uid));
+            //    }
 
-            if (n.Items.Count > 0)
-            {
-                html.AppendLine("<ul class=\"sidenav-menu\">");
-                foreach (NavItem item in n.Items)
-                {
-                    html.AppendLine(ProcessNav(item, active, uid));
-                }
-
-                html.AppendLine("</ul>");
-            }
+            //    html.AppendLine("</ul>");
+            //}
 
             html.AppendLine("</li>");
 
