@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using AngryMonkey.Objects;
 using Newtonsoft.Json;
@@ -36,11 +37,9 @@ namespace AngryMonkey
             {
                 Console.Write("Processing Root Document...");
                 StringBuilder superNav = new StringBuilder();
-                superNav.AppendLine("<ul>");
                 foreach (Hive h in Hives)
                     superNav.AppendLine(
                         $"<li class=\"nav-item\"><a class=\"nav-link\" href=\"/{h.BaseItem.Link}\">{h.BaseItem.Title}</a></li>");
-                superNav.AppendLine("</ul>");
 
                 Processor p = new Processor(Nav.RootPath) { MainNavHTML = superNav.ToString() };
                 p.ProcessRootMD(Nav.RootPath + "source\\index.md");
@@ -52,6 +51,21 @@ namespace AngryMonkey
                 Console.Write($"Processing {hive.Path}...");
 
                 string path = Nav.RootPath + "docs\\" + hive.Path;
+
+                string newMD5 = CreateMd5ForFolder(Nav.RootPath + "source\\" + hive.Path);
+                
+                if (File.Exists(Nav.RootPath + "source\\" + hive.Path + "_hash.md5"))
+                {
+                    if (newMD5 == File.ReadAllText(Nav.RootPath + "source\\" + hive.Path + "_hash.md5"))
+                    {
+                        Console.WriteLine("HASH SKIP!");
+                        continue;
+                    }
+                }
+
+                File.WriteAllText(Nav.RootPath + "source\\" + hive.Path + "_hash.md5", newMD5);
+
+
                 try
                 {
                     if (Directory.Exists(path))
@@ -151,5 +165,33 @@ namespace AngryMonkey
         }
 
         private static void OK() { Console.WriteLine("OK"); }
+
+        public static string CreateMd5ForFolder(string path)
+        {
+            // assuming you want to include nested folders
+            var files = Directory.GetFiles(path, "*.*", SearchOption.AllDirectories)
+                                 .OrderBy(p => p).ToList();
+
+            MD5 md5 = MD5.Create();
+
+            for (int i = 0; i < files.Count; i++)
+            {
+                string file = files[i];
+
+                // hash path
+                string relativePath = file.Substring(path.Length + 1);
+                byte[] pathBytes = Encoding.UTF8.GetBytes(relativePath.ToLower());
+                md5.TransformBlock(pathBytes, 0, pathBytes.Length, pathBytes, 0);
+
+                // hash contents
+                byte[] contentBytes = File.ReadAllBytes(file);
+                if (i == files.Count - 1)
+                    md5.TransformFinalBlock(contentBytes, 0, contentBytes.Length);
+                else
+                    md5.TransformBlock(contentBytes, 0, contentBytes.Length, contentBytes, 0);
+            }
+
+            return BitConverter.ToString(md5.Hash).Replace("-", "").ToLower();
+        }
     }
 }

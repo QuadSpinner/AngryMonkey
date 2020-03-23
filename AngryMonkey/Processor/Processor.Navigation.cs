@@ -97,26 +97,11 @@ namespace AngryMonkey
             string activeClass = active == ActiveState.Self ? "active" : "";
             //string openClass = active == ActiveState.Child ? "open" : "";
             html.AppendLine($"<li class=\"{activeClass}\">");
-            //if (n.Items.Count > 0)
-            //{
-            //    html.AppendLine("<a href=\"javascript:void(0)\" class=\"sidenav-link sidenav-toggle\">");
-            //}
-            //else
+ 
             {
                 string link = n.Link.Replace(Nav.RootPath, string.Empty).Replace("\\", "/").Replace(".md", ".html");
                 html.AppendLine($"<a href=\"{link}\">{n.Title}</a>");
             }
-
-            //if (n.Items.Count > 0)
-            //{
-            //    html.AppendLine("<ul class=\"sidenav-menu\">");
-            //    foreach (NavItem item in n.Items)
-            //    {
-            //        html.AppendLine(ProcessNav(item, active, uid));
-            //    }
-
-            //    html.AppendLine("</ul>");
-            //}
 
             html.AppendLine("</li>");
 

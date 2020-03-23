@@ -16,6 +16,7 @@ namespace AngryMonkey
             string name = Nav.SanitizeFilename(md);
             string html = raw_html;
 
+            html = html.Replace("<!--REPLACE--OPT-->", optHtml);
             html = html.Replace("<!--REPLACE--NAV-->", navHtml);
             html = html.Replace("<!--REPLACE-SUPERNAV-->", MainNavHTML);
 
@@ -40,15 +41,19 @@ namespace AngryMonkey
 
             StringBuilder bread = new StringBuilder();
 
-            bread.AppendLine("<ol class=\"breadcrumb\">");
-            bread.AppendLine(
-                "<li class=\"breadcrumb-item\"><a href=\"/index.html\">Home</a></li>");
-            bread.AppendLine($"<li class=\"breadcrumb-item\"><a href=\"{BaseItem.Link}\">{BaseItem.Title}</a></li>");
-            if (navs.Items.Any(i => i.Items.Any(x => x.Title == title)))
+            if (navs != null)
+            {
+
+                bread.AppendLine("<ol class=\"breadcrumb visible-md visible-lg\">");
                 bread.AppendLine(
-                    $"<li class=\"breadcrumb-item\">{navs.Items.First(i => i.Items.Any(x => x.Title == title))}</li>");
-            bread.AppendLine($"<li class=\"breadcrumb-item active\">{title}</li>");
-            bread.AppendLine("</ol>");
+                    "<li class=\"breadcrumb-item\"><a href=\"/index.html\">Home</a></li>");
+                bread.AppendLine($"<li class=\"breadcrumb-item\"><a href=\"{BaseItem.Link}\">{BaseItem.Title}</a></li>");
+                if (navs.Items.Any(i => i.Items.Any(x => x.Title == title)))
+                    bread.AppendLine(
+                        $"<li class=\"breadcrumb-item\">{navs.Items.First(i => i.Items.Any(x => x.Title == title))}</li>");
+                bread.AppendLine($"<li class=\"breadcrumb-item active\">{title}</li>");
+                bread.AppendLine("</ol>");
+            }
 
             #endregion Get Title
 
@@ -56,21 +61,11 @@ namespace AngryMonkey
 
             foreach (string s in lines)
             {
-                //bool f = s.Contains("@installing");
-                //if (f)
-                //{
-                //    f = f;
-                //}
                 raw.AppendLine(ProcessLinks(s));
             }
 
             StringBuilder output = new StringBuilder();
-
-            //output.AppendLine("<div class=\"card\">");
-            //output.AppendLine("<div class=\"card-header\"><!--REPLACE--BREADCRUMBS--></div>");
-            //output.AppendLine("<div class=\"card-body\">");
             output.AppendLine(Markdown.ToHtml(raw.ToString(), p));
-            //output.AppendLine("</div></div>");
 
             if (ProcessProceduralFiles)
             {
@@ -95,7 +90,7 @@ namespace AngryMonkey
                 output.AppendLine(ProcessTutorials(md));
             }
 
-            html = html.Replace("<!--REPLACE--BODY-->", $"{bread}<p class=\"title\">{title}</p>{output}");
+            html = html.Replace("<!--REPLACE--BODY-->", $"{bread}<p class=\"faux-h1\">{title}</p>{output}");
             html = html.Replace("%%TITLE%%", title);
             //html = html.Replace("<!--REPLACE--BREADCRUMBS-->", bread.ToString());
 

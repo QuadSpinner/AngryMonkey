@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Colorful;
 using Markdig;
 using Markdig.Extensions.AutoIdentifiers;
 using Markdig.Extensions.Tables;
@@ -27,6 +28,7 @@ namespace AngryMonkey
         });
 
         private string navHtml = "";
+        private string optHtml = "";
         private NavItem navs;
         private MarkdownPipeline p;
         private string raw_html;
@@ -61,54 +63,59 @@ namespace AngryMonkey
                                              .UseGenericAttributes()
                                              .UseAutoIdentifiers(AutoIdentifierOptions.GitHub)
                                              .Build();
+            
+            for (int i = 0; i < MDs.Count; i++)
+            {
+                StringBuilder nhtml = new StringBuilder();
+                StringBuilder ohtml = new StringBuilder();
 
-            Parallel.For(0,
-                         MDs.Count,
-                         i =>
-                         {
-                             StringBuilder nhtml = new StringBuilder();
+                foreach (NavItem item in navs.Items)
+                {
+                    ActiveState active = ActiveState.None;
+                    string uid = Nav.GetNavItem(MDs[i]).UID;
+                    string nid = Nav.SanitizeFilename(item.Title).Replace(" ", string.Empty);
 
-                             foreach (NavItem item in navs.Items)
-                             {
-                                 ActiveState active = ActiveState.None;
-                                 string uid = Nav.GetNavItem(MDs[i]).UID;
-                                 string nid = Nav.SanitizeFilename(item.Title).Replace(" ", string.Empty);
+                    if (item.Items.Any(t => t.UID == uid))
+                    {
+                        active = ActiveState.Child;
+                        nhtml.AppendLine("<li class=\"panel expanded active\">" +
+                                         $"<a class=\"area\" href=\"#{nid}\" data-parent=\"#main-nav\" data-toggle=\"collapse\">{item.Title}</a>");
+                        nhtml.AppendLine($"<ul id=\"{nid}\" class=\"collapse in\">");
+                    }
+                    else
+                    {
+                        nhtml.AppendLine("<li class=\"panel collapsed\">" +
+                                         $"<a class=\"area\" href=\"#{nid}\" data-parent=\"#main-nav\" data-toggle=\"collapse\">{item.Title}</a>");
+                        nhtml.AppendLine($"<ul id=\"{nid}\" class=\"collapse\">");
+                    }
 
-                                 if (item.Items.Any(t => t.UID == uid))
-                                 {
-                                     active = ActiveState.Child;
-                                     nhtml.AppendLine("<li class=\"panel expanded active\">" +
-                                                      $"<a class=\"area\" href=\"#{nid}\" data-parent=\"#main-nav\" data-toggle=\"collapse\">{item.Title}</a>");
-                                     nhtml.AppendLine($"<ul id=\"{nid}\" class=\"collapse in\">");
-                                 }
-                                 else
-                                 {
-                                     nhtml.AppendLine("<li class=\"panel collapsed\">" +
-                                                      $"<a class=\"area\" href=\"#{nid}\" data-parent=\"#main-nav\" data-toggle=\"collapse\">{item.Title}</a>");
-                                     nhtml.AppendLine($"<ul id=\"{nid}\" class=\"collapse\">");
-                                 }
+                    ohtml.AppendLine($"<optgroup label=\"{item.Title}\">");
 
-                                 foreach (NavItem navItem in item.Items)
-                                 {
+                    foreach (NavItem navItem in item.Items)
+                    {
 
-                                     if (active == ActiveState.Child && uid == navItem.UID)
-                                     {
-                                         nhtml.AppendLine(ProcessNav(navItem, active, uid));
-                                     }
-                                     else
-                                     {
-                                         nhtml.AppendLine(ProcessNav(navItem, ActiveState.None, uid));
-                                     }
-                                 }
+                        if (active == ActiveState.Child && uid == navItem.UID)
+                        {
+                            nhtml.AppendLine(ProcessNav(navItem, active, uid));
+                            ohtml.AppendLine($"<option selected=\"selected\" value=\"{navItem.Link}\">{navItem.Title}</option>");
+                        }
+                        else
+                        {
+                            nhtml.AppendLine(ProcessNav(navItem, ActiveState.None, uid));
+                            ohtml.AppendLine($"<option value=\"{navItem.Link}\">{navItem.Title}</option>");
+                        }
+                    }
 
-                                 nhtml.AppendLine("</ul></li></div>");
-                             }
+                    nhtml.AppendLine("</ul></li></div>");
+                    ohtml.AppendLine("</optgroup>");
+                }
 
 
-                             navHtml = minifier.Minify(nhtml.ToString()).MinifiedContent;
+                navHtml = minifier.Minify(nhtml.ToString()).MinifiedContent;
+                optHtml = "<select id=\"small-nav-dropdown\">" + minifier.Minify(ohtml.ToString()).MinifiedContent + "</select>";
 
-                             ProcessMD(MDs[i]);
-                         });
+                ProcessMD(MDs[i]);
+            }//);
 
             //! Uncomment to use parallel processing. Useful when you have hundreds of files.
             // Parallel.For(0, MDs.Count, i => ProcessMD(MDs[i]));
