@@ -39,7 +39,7 @@ namespace AngryMonkey
                 StringBuilder superNav = new StringBuilder();
                 foreach (Hive h in Hives)
                     superNav.AppendLine(
-                        $"<li class=\"nav-item\"><a class=\"nav-link\" href=\"/{h.BaseItem.Link}\">{h.BaseItem.Title}</a></li>");
+                        $"<li><a href=\"/{h.BaseItem.Link}\">{h.BaseItem.Title}</a></li>");
 
                 Processor p = new Processor(Nav.RootPath) { MainNavHTML = superNav.ToString() };
                 p.ProcessRootMD(Nav.RootPath + "source\\index.md");
@@ -54,7 +54,7 @@ namespace AngryMonkey
 
                 string newMD5 = CreateMd5ForFolder(Nav.RootPath + "source\\" + hive.Path);
                 
-                if (File.Exists(Nav.RootPath + "source\\" + hive.Path + "_hash.md5"))
+                if (!Environment.CommandLine.Contains("--force") && File.Exists(Nav.RootPath + "source\\" + hive.Path + "_hash.md5"))
                 {
                     if (newMD5 == File.ReadAllText(Nav.RootPath + "source\\" + hive.Path + "_hash.md5"))
                     {

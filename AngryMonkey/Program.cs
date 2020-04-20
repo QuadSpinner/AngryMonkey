@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 
 namespace AngryMonkey
 {
@@ -6,9 +7,10 @@ namespace AngryMonkey
     {
         private static void Main(string[] args)
         {
-            string root = args.Length == 0 
-                              ? Environment.CurrentDirectory // Use current directory
-                              : args[1]; // Use path supplied in the arguments
+            string root = Environment.CurrentDirectory; // Use current directory
+
+            //if (args.Length > 0 && args[1] != "--force")
+            //    root = args[1]; // Use path supplied in the arguments
 
             if (!root.EndsWith("\\"))
                 root = $"{root}\\";
@@ -18,5 +20,10 @@ namespace AngryMonkey
             Documenter doc = new Documenter();
             doc.ProcessHives();
         }
+    }
+
+
+    public static class Logger{
+        public static StringBuilder atLogs = new StringBuilder();
     }
 }

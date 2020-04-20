@@ -11,6 +11,7 @@ namespace AngryMonkey
 {
     public partial class Processor
     {
+        private string title = "";
         internal void ProcessMD(string md)
         {
             string name = Nav.SanitizeFilename(md);
@@ -22,7 +23,6 @@ namespace AngryMonkey
 
             #region Get Title
 
-            string title = "";
             string[] lines = File.ReadAllLines(md);
 
             if (lines.Length > 3)
@@ -159,7 +159,7 @@ namespace AngryMonkey
             //Console.Write(".");
         }
 
-        private static string ProcessLinks(string s)
+        private string ProcessLinks(string s)
         {
             if (s.Contains("@"))
             {
@@ -168,6 +168,12 @@ namespace AngryMonkey
                                   (current, identifier)
                                       => current.Replace(identifier.UID,
                                                          $"[{identifier.Title}]({identifier.Link})"));
+            }
+
+            if (s.Contains("@"))
+            {
+
+                Console.WriteLine($"@@@@ {title}");
             }
 
             return s;
