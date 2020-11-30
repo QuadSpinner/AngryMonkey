@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <TargetFramework>net5.0</TargetFramework>
     <AssemblyVersion>1.0.0.28</AssemblyVersion>
     <FileVersion>1.0.0.28</FileVersion>
   </PropertyGroup>
@@ -20,10 +20,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Colorful.Console" Version="1.2.9" />
-    <PackageReference Include="Markdig" Version="0.16.0" />
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
-    <PackageReference Include="WebMarkupMin.Core" Version="2.5.5" />
+    <PackageReference Include="Colorful.Console" Version="1.2.11" />
+    <PackageReference Include="Markdig" Version="0.22.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+    <PackageReference Include="WebMarkupMin.Core" Version="2.8.6" />
   </ItemGroup>
 
 </Project>

@@ -2,8 +2,7 @@
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
-using Colorful;
+using AngryMonkey.Objects;
 using Markdig;
 using Markdig.Extensions.AutoIdentifiers;
 using Markdig.Extensions.Tables;
@@ -13,11 +12,11 @@ namespace AngryMonkey
 {
     public partial class Processor
     {
-        public const string BodyTemplate = @"_template\index.2.html";
+        public  string BodyTemplate = @"\source\_template\index.2.html";
+        public string CardTemplate = @"\source\_template\card.frag";
 
         internal NavItem BaseItem = new NavItem("User Guide", "guide.html") { UID = "guide" };
 
-        public string CardTemplate = @"_template\card.frag";
 
         private List<string> MDs = new List<string>();
 
@@ -32,6 +31,8 @@ namespace AngryMonkey
         private NavItem navs;
         private MarkdownPipeline p;
         private string raw_html;
+
+        internal List<SearchObject> search = new List<SearchObject>();
 
         public Processor(string rootPath)
         {

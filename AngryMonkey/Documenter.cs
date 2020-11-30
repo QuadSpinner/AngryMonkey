@@ -27,6 +27,7 @@ namespace AngryMonkey
                 }
                 else
                 {
+                    Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine("No HIVES were specified. HIVES.JSON is missing from the root.");
                     Console.WriteLine("\nThe monkey is angry!\nBUILD CANCELLED");
                     return;
@@ -46,6 +47,8 @@ namespace AngryMonkey
                 OK();
             }
 
+            List<SearchObject> searches = new List<SearchObject>();
+
             foreach (Hive hive in Hives)
             {
                 Console.Write($"Processing {hive.Path}...");
@@ -53,8 +56,9 @@ namespace AngryMonkey
                 string path = Nav.RootPath + "docs\\" + hive.Path;
 
                 string newMD5 = CreateMd5ForFolder(Nav.RootPath + "source\\" + hive.Path);
-                
-                if (!Environment.CommandLine.Contains("--force") && File.Exists(Nav.RootPath + "source\\" + hive.Path + "_hash.md5"))
+
+                if (!Environment.CommandLine.Contains("--force") &&
+                    File.Exists(Nav.RootPath + "source\\" + hive.Path + "_hash.md5"))
                 {
                     if (newMD5 == File.ReadAllText(Nav.RootPath + "source\\" + hive.Path + "_hash.md5"))
                     {
@@ -65,7 +69,6 @@ namespace AngryMonkey
 
                 File.WriteAllText(Nav.RootPath + "source\\" + hive.Path + "_hash.md5", newMD5);
 
-
                 try
                 {
                     if (Directory.Exists(path))
@@ -73,21 +76,21 @@ namespace AngryMonkey
                 }
                 catch (Exception)
                 {
+                    Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine("\n(ERROR) Existing directory " + path +
                                       " could not be deleted.\n\nSKIPPING THIS HIVE!");
+                    Console.ForegroundColor = ConsoleColor.Gray;
                     continue;
                 }
 
                 StringBuilder superNav = new StringBuilder();
-            
+
                 foreach (Hive h in Hives)
                 {
-
                     superNav.AppendLine(h.Path == hive.Path
                                             ? $"<li class=\"active\"><a href=\"/{h.BaseItem.Link}\">{h.BaseItem.Title}</a></li>"
                                             : $"<li><a href=\"/{h.BaseItem.Link}\">{h.BaseItem.Title}</a></li>");
                 }
-              
 
                 Processor p = new Processor(Nav.RootPath)
                 {
@@ -100,9 +103,59 @@ namespace AngryMonkey
                 };
                 p.Process();
 
+                if (hive.Path != "Changelogs")
+                    searches.AddRange(p.search);
+
                 OK();
             }
 
+            string jsonString = JsonConvert.SerializeObject(searches,
+                                                            searches.GetType(),
+                                                            Formatting.None,
+                                                            new JsonSerializerSettings
+                                                            {
+                                                                StringEscapeHandling = StringEscapeHandling.EscapeHtml
+                                                            })
+                                           //.Replace("{.w-100}", "")
+                                           //.Replace("{.w-75}", "")
+                                           //.Replace("{.w-50}", "")
+                                           //.Replace("{.w-25}", "")
+                                           //.Replace("{.TIP}", "")
+                                           //.Replace("{.NOTE}", "")
+                                           //.Replace("{.WARNING}", "")
+                                           //.Replace("{.val}", "")
+                                           .Replace("  ", "")
+                                           .Replace("|", "")
+                                           .Replace("`", "")
+                                           .Replace("--", "")
+                                           .Replace("\\u0022", "")
+                                           .Replace("\\u0027", "'")
+                                           //!STOP
+                                           //.Replace(" is ", " ")
+                                           //.Replace(" that ", " ")
+                                           //.Replace(" a ", " ")
+                                           //.Replace(" an ", " ")
+                                           //.Replace(" for ", " ")
+                                           //.Replace(" this ", " ")
+                                           //.Replace(" some ", " ")
+                                           //.Replace(" other ", " ")
+                                           //.Replace(" be ", " ")
+                                           //.Replace(" to ", " ")
+                                           //.Replace(" it ", " ")
+                                           //.Replace(" from ", " ")
+                                           //.Replace(" can ", " ")
+                                           //.Replace(" else ", " ")
+                                           //.Replace(" with ", " ")
+                                           //.Replace(" as ", " ")
+                                           .Replace("  ", " ")
+                                           .Replace("  ", " ")
+                                           .Replace("\\n", " ")
+                                           .Replace("\n", "");
+
+
+
+            File.WriteAllText(Nav.RootPath + "docs\\search.json", jsonString);
+            Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine("The monkey is happy!\nGENERATION COMPLETE");
         }
 
@@ -164,7 +217,12 @@ namespace AngryMonkey
             return false;
         }
 
-        private static void OK() { Console.WriteLine("OK"); }
+        private static void OK()
+        {
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine("OK");
+            Console.ForegroundColor = ConsoleColor.Gray;
+        }
 
         public static string CreateMd5ForFolder(string path)
         {

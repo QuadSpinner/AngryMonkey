@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
+using AngryMonkey.Objects;
 using Markdig;
 using Markdig.Extensions.AutoIdentifiers;
 using Markdig.Extensions.Tables;
@@ -59,9 +61,37 @@ namespace AngryMonkey
 
             StringBuilder raw = new StringBuilder();
 
-            foreach (string s in lines)
+            foreach (string s in lines.Skip(3))
             {
-                raw.AppendLine(ProcessLinks(s));
+                if (s.StartsWith("^"))
+                {
+                    string include = $"{Nav.RootPath}\\source\\_includes\\{s.Replace("^", string.Empty)}.md";
+                    if (File.Exists(include))
+                        raw.AppendLine(File.ReadAllText(include));
+                }
+                else
+                {
+                    raw.AppendLine(ProcessLinks(s));
+                }
+            }
+
+            if (!md.ToLower().Contains("index.md"))
+            {
+                string doc = Markdown.ToPlainText(raw.ToString());
+
+                doc = Regex.Replace(doc.Substring(0, doc.Length >= 1200 ? 1200 : doc.Length), @"\{([^\}]+)\}", "");
+                doc = Regex.Replace(doc.Substring(0, doc.Length >= 1200 ? 1200 : doc.Length), @"\<([^\>]+)\>", "");
+
+                search.Add(new SearchObject
+                {
+                    url = Nav.GetNavItem(md).Link,
+                    title = title,
+                    hive = BaseItem.Title,
+                    parent = navs.Items.Any(i => i.Items.Any(x => x.Title == title)) ?
+                                                        navs.Items.First(i => i.Items.Any(x => x.Title == title)).Title
+                                                        : "",
+                    text = doc
+                });
             }
 
             StringBuilder output = new StringBuilder();
@@ -98,15 +128,19 @@ namespace AngryMonkey
             {
                 string subpath = Path.GetDirectoryName(md.Replace(Nav.RootPath, Nav.RootPath + dst))
                                      .Replace("source\\", "");
+
+                if (subpath.Contains("Data"))
+                {
+
+                }
                 if (!subpath.EndsWith("\\"))
                     subpath += "\\";
 
                 subpath = Nav.ReplaceNumbers(subpath);
-
                 Directory.CreateDirectory(subpath);
 
-                File.WriteAllText(subpath + name + ".html", html);
-                // File.WriteAllText(subpath + name + ".html", minifier.Minify(html).MinifiedContent);
+                //File.WriteAllText(subpath + name + ".html", html);
+                File.WriteAllText(subpath + name + ".html", minifier.Minify(html).MinifiedContent);
             }
             catch (IOException)
             {
@@ -136,7 +170,16 @@ namespace AngryMonkey
 
             foreach (string s in lines)
             {
-                raw.AppendLine(ProcessLinks(s));
+                if (s.StartsWith("^"))
+                {
+                    string include = $"{Nav.RootPath}\\source\\_includes\\{s.Replace("^", string.Empty)}.md";
+                    if (File.Exists(include))
+                        raw.AppendLine(File.ReadAllText(include));
+                }
+                else
+                {
+                    raw.AppendLine(ProcessLinks(s));
+                }
             }
 
             StringBuilder output = new StringBuilder();
@@ -172,8 +215,9 @@ namespace AngryMonkey
 
             if (s.Contains("@"))
             {
-
-                Console.WriteLine($"@@@@ {title}");
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.WriteLine($"\n@@@@ {title}");
+                Console.ForegroundColor = ConsoleColor.Gray;
             }
 
             return s;
@@ -198,7 +242,7 @@ namespace AngryMonkey
 
                 if (line.StartsWith("^"))
                 {
-                    string include = $"{Nav.RootPath}Includes\\{line.Replace("^", string.Empty)}.md";
+                    string include = $"{Nav.RootPath}\\source\\_includes\\{line.Replace("^", string.Empty)}.md";
                     if (File.Exists(include))
                         current.AppendLine(File.ReadAllText(include));
                 }

@@ -46,16 +46,8 @@ namespace AngryMonkey
                 md.AppendLine("title: Gaea " + version);
                 md.AppendLine("---\n\n");
                 md.AppendLine($"**Released on {manifest.ReleaseDate:dd MMMM yyyy}**\n");
-
-                //md.AppendLine("<div class=\"btn-group\" role=\"group\">");
-
-                md.AppendLine($"<a href=\"{manifest.URL}\">Download Full Installer {manifest.Size / 1024.0 / 1024.0:F}MB</a> <br>");
-
-                if (manifest.PatchSize > 0)
-                    md.AppendLine($"<a href=\"{manifest.PatchURL}\">Download Patch {manifest.PatchSize / 1024.0 / 1024.0:F}MB</a> <br>");
-                
+                md.AppendLine($"<a href=\"{manifest.URL}\">Download {manifest.Size / 1024.0 / 1024.0:F}MB</a> <br>");
                 md.AppendLine("\n");
-
                 md.AppendLine("<div class=\"release-note\">\n");
                 md.AppendLine(manifest.FullDescription);
                 md.AppendLine("</div>");

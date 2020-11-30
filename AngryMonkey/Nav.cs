@@ -23,8 +23,8 @@ namespace AngryMonkey
         {
             identifiers.Clear();
             IEnumerable<string> mds = Directory.GetFiles(dir, "*.md", SearchOption.AllDirectories);
-       
-            foreach (string md in mds.Where(md => !md.ToLower().EndsWith(".params.md") && !md.Contains("--")))
+
+            foreach (string md in mds.Where(md => !md.ToLower().EndsWith(".params.md") && !md.Contains("--") && !md.Contains("\\_")))
             {
                 identifiers.Add(GetNavItem(md));
             }
@@ -50,10 +50,11 @@ namespace AngryMonkey
                     n.Title = lines[i].Split(':')[1].Trim();
                 }
 
-                if (lines[i].Contains("nav:"))
-                {
-                    n.Show = lines[i].Split(':')[1].Trim() == "true";
-                }
+            }
+
+            if (md.ToLower().Contains("index.md"))
+            {
+                n.Show = false;
             }
 
             n.Link = Uri.EscapeUriString(ReplaceNumbers(n.Link.Replace(RootPath + "source", string.Empty).Replace("\\", "/").Replace(".md", ".html")));
@@ -65,7 +66,16 @@ namespace AngryMonkey
         {
             for (int i = 0; i < 100; i++)
             {
-                subpath = subpath.Replace($"0{i}-", "");
+                subpath = subpath.Replace($"{i:000}-", "");
+            }
+
+            for (int i = 0; i < 100; i++)
+            {
+                subpath = subpath.Replace($"{i:00}-", "");
+            }
+
+            for (int i = 0; i < 100; i++)
+            {
                 subpath = subpath.Replace($"{i}-", "");
             }
 
