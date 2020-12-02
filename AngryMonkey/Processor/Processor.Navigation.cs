@@ -24,6 +24,34 @@ namespace AngryMonkey
 
             NavItem current = new NavItem(dirName);
 
+            PreprocessChangelogs(dir);
+
+            string[] mds = Directory.GetFiles(dir, "*.md");
+
+            if (dir.Contains("Changelogs"))
+                mds = mds.OrderByDescending(x => x).ToArray();
+
+            foreach (string md in mds.Where(md => !md.ToLower().EndsWith(".params.md") && !md.Contains("--")))
+            {
+                var temp = Nav.GetNavItem(md);
+                temp.Link = Nav.ReplaceNumbers(temp.Link.Replace(Nav.RootPath + "source", string.Empty).Replace("\\", "/").Replace(".md", ".html"));
+
+                if (temp.Show)
+                    current.Items.Add(temp);
+
+                MDs.Add(md);
+            }
+
+            foreach (string d in dirs)
+            {
+                current.Items.Add(ParseDirectory(d));
+            }
+
+            return current;
+        }
+
+        private static void PreprocessChangelogs(string dir)
+        {
             string[] xml = Directory.GetFiles(dir, "*.update");
 
             XmlSerializer xs = new XmlSerializer(typeof(UpdateManifest));
@@ -54,50 +82,42 @@ namespace AngryMonkey
 
                 File.WriteAllText($"{Path.GetDirectoryName(x)}\\{version}.md", md.ToString());
             }
-
-            string[] mds = Directory.GetFiles(dir, "*.md");
-
-            if (dir.Contains("Changelogs"))
-                mds = mds.OrderByDescending(x => x).ToArray();
-
-            foreach (string md in mds.Where(md => !md.ToLower().EndsWith(".params.md") && !md.Contains("--")))
-            {
-                var temp = Nav.GetNavItem(md);
-                temp.Link = Nav.ReplaceNumbers(temp.Link.Replace(Nav.RootPath + "source", string.Empty).Replace("\\", "/").Replace(".md", ".html"));
-
-                if (temp.Show)
-                    current.Items.Add(temp);
-
-                MDs.Add(md);
-            }
-
-            foreach (string d in dirs)
-            {
-                current.Items.Add(ParseDirectory(d));
-            }
-
-            return current;
         }
 
-        private static string ProcessNav(NavItem n, ActiveState active, string uid)
+        private void CreateNavigation()
         {
-            StringBuilder html = new StringBuilder();
+            StringBuilder nhtml = new StringBuilder();
+            StringBuilder ohtml = new StringBuilder();
 
-            if (n.UID == uid)
-                active = ActiveState.Self;
-
-            string activeClass = active == ActiveState.Self ? "active" : "";
-            //string openClass = active == ActiveState.Child ? "open" : "";
-            html.AppendLine($"<li class=\"{activeClass}\">");
- 
+            foreach (NavItem item in navs.Items)
             {
-                string link = n.Link.Replace(Nav.RootPath, string.Empty).Replace("\\", "/").Replace(".md", ".html");
-                html.AppendLine($"<a href=\"{link}\">{n.Title}</a>");
+                //ActiveState active = ActiveState.None;
+                //string uid = Nav.GetNavItem(MDs[i]).UID;
+                string nid = Nav.SanitizeFilename(item.Title).Replace(" ", string.Empty);
+
+                nhtml.AppendLine(
+                    $"<li class=\"panel collapsed\"><a class=\"area\" href=\"#{nid}\" data-parent=\"#main-nav\" data-toggle=\"collapse\">{item.Title}</a>");
+                nhtml.AppendLine($"<ul id=\"{nid}\" class=\"collapse\">");
+
+
+                ohtml.AppendLine($"<optgroup label=\"{item.Title}\">");
+
+                foreach (NavItem navItem in item.Items)
+                {
+                    nhtml.AppendLine(
+                        $"<li class=\"xref\"><a href=\"{navItem.Link.Replace(Nav.RootPath, string.Empty).Replace("\\", "/").Replace(".md", ".html")}\">{navItem.Title}</a></li>");
+                    ohtml.AppendLine($"<option value=\"{navItem.Link}\">{navItem.Title}</option>");
+                }
+
+                nhtml.AppendLine("</ul></li></div>");
+                ohtml.AppendLine("</optgroup>");
             }
 
-            html.AppendLine("</li>");
+            navHtml = minifier.Minify(nhtml.ToString()).MinifiedContent;
+            optHtml = "<select id=\"small-nav-dropdown\">" + minifier.Minify(ohtml.ToString()).MinifiedContent + "</select>";
 
-            return html.ToString();
+            File.WriteAllText($"{dst}navs\\{BaseItem.UID}-n.html", navHtml);
+            File.WriteAllText($"{dst}navs\\{BaseItem.UID}-o.html", optHtml);
         }
     }
 

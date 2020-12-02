@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
+using System.Threading.Tasks;
 using AngryMonkey.Objects;
 using Markdig;
 using Markdig.Extensions.AutoIdentifiers;
@@ -12,7 +11,7 @@ namespace AngryMonkey
 {
     public partial class Processor
     {
-        public  string BodyTemplate = @"\source\_template\index.2.html";
+        public string BodyTemplate = @"\source\_template\index.2.html";
         public string CardTemplate = @"\source\_template\card.frag";
 
         internal NavItem BaseItem = new NavItem("User Guide", "guide.html") { UID = "guide" };
@@ -64,62 +63,16 @@ namespace AngryMonkey
                                              .UseGenericAttributes()
                                              .UseAutoIdentifiers(AutoIdentifierOptions.GitHub)
                                              .Build();
-            
+
+            CreateNavigation();
+
             for (int i = 0; i < MDs.Count; i++)
             {
-                StringBuilder nhtml = new StringBuilder();
-                StringBuilder ohtml = new StringBuilder();
-
-                foreach (NavItem item in navs.Items)
-                {
-                    ActiveState active = ActiveState.None;
-                    string uid = Nav.GetNavItem(MDs[i]).UID;
-                    string nid = Nav.SanitizeFilename(item.Title).Replace(" ", string.Empty);
-
-                    if (item.Items.Any(t => t.UID == uid))
-                    {
-                        active = ActiveState.Child;
-                        nhtml.AppendLine("<li class=\"panel expanded active\">" +
-                                         $"<a class=\"area\" href=\"#{nid}\" data-parent=\"#main-nav\" data-toggle=\"collapse\">{item.Title}</a>");
-                        nhtml.AppendLine($"<ul id=\"{nid}\" class=\"collapse in\">");
-                    }
-                    else
-                    {
-                        nhtml.AppendLine("<li class=\"panel collapsed\">" +
-                                         $"<a class=\"area\" href=\"#{nid}\" data-parent=\"#main-nav\" data-toggle=\"collapse\">{item.Title}</a>");
-                        nhtml.AppendLine($"<ul id=\"{nid}\" class=\"collapse\">");
-                    }
-
-                    ohtml.AppendLine($"<optgroup label=\"{item.Title}\">");
-
-                    foreach (NavItem navItem in item.Items)
-                    {
-
-                        if (active == ActiveState.Child && uid == navItem.UID)
-                        {
-                            nhtml.AppendLine(ProcessNav(navItem, active, uid));
-                            ohtml.AppendLine($"<option selected=\"selected\" value=\"{navItem.Link}\">{navItem.Title}</option>");
-                        }
-                        else
-                        {
-                            nhtml.AppendLine(ProcessNav(navItem, ActiveState.None, uid));
-                            ohtml.AppendLine($"<option value=\"{navItem.Link}\">{navItem.Title}</option>");
-                        }
-                    }
-
-                    nhtml.AppendLine("</ul></li></div>");
-                    ohtml.AppendLine("</optgroup>");
-                }
-
-
-                navHtml = minifier.Minify(nhtml.ToString()).MinifiedContent;
-                optHtml = "<select id=\"small-nav-dropdown\">" + minifier.Minify(ohtml.ToString()).MinifiedContent + "</select>";
-
                 ProcessMD(MDs[i]);
-            }//);
+            }
 
             //! Uncomment to use parallel processing. Useful when you have hundreds of files.
-            // Parallel.For(0, MDs.Count, i => ProcessMD(MDs[i]));
+            //Parallel.For(0, MDs.Count, i => ProcessMD(MDs[i]));
         }
     }
 }

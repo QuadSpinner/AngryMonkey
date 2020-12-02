@@ -11,10 +11,13 @@ namespace AngryMonkey
 {
     internal class Documenter
     {
+        public bool force;
         public List<Hive> Hives { get; set; } = new List<Hive>();
 
         public void ProcessHives()
         {
+            force = Environment.CommandLine.Contains("--force");
+
             if (MapIdentifiers()) return;
 
             if (Hives == null || Hives.Count == 0)
@@ -34,35 +37,51 @@ namespace AngryMonkey
                 }
             }
 
-            if (File.Exists(Nav.RootPath + "source\\index.md"))
+            string templateMD5 = CreateMd5ForFolder(Nav.RootPath + "source\\_template");
+
+            if (!force && File.Exists(Nav.RootPath + "source\\template_hash.md5"))
             {
-                Console.Write("Processing Root Document...");
+                if (templateMD5 != File.ReadAllText(Nav.RootPath + "source\\template_hash.md5"))
+                {
+                    force = true;
+                }
+            }
+
+            string[] rootFiles = { "source\\index.md", "source\\404.md" };
+
+            Console.Write("Root Documents...");
+
+            {
                 StringBuilder superNav = new StringBuilder();
                 foreach (Hive h in Hives)
-                    superNav.AppendLine(
-                        $"<li><a href=\"/{h.BaseItem.Link}\">{h.BaseItem.Title}</a></li>");
-
+                    superNav.AppendLine($"<li><a href=\"/{h.BaseItem.Link}\">{h.BaseItem.Title}</a></li>");
                 Processor p = new Processor(Nav.RootPath) { MainNavHTML = superNav.ToString() };
-                p.ProcessRootMD(Nav.RootPath + "source\\index.md");
-                OK();
+                foreach (var rootfile in rootFiles)
+                {
+                    if (File.Exists(Nav.RootPath + rootfile))
+                    {
+                        p.ProcessRootMD(Nav.RootPath + rootfile, false);
+                    }
+                }
             }
+
+            OK();
 
             List<SearchObject> searches = new List<SearchObject>();
 
             foreach (Hive hive in Hives)
             {
-                Console.Write($"Processing {hive.Path}...");
 
+                Console.Write($"{hive.Path}...");
                 string path = Nav.RootPath + "docs\\" + hive.Path;
-
                 string newMD5 = CreateMd5ForFolder(Nav.RootPath + "source\\" + hive.Path);
-
-                if (!Environment.CommandLine.Contains("--force") &&
-                    File.Exists(Nav.RootPath + "source\\" + hive.Path + "_hash.md5"))
+                if (!force && File.Exists(Nav.RootPath + "source\\" + hive.Path + "_hash.md5"))
                 {
                     if (newMD5 == File.ReadAllText(Nav.RootPath + "source\\" + hive.Path + "_hash.md5"))
                     {
-                        Console.WriteLine("HASH SKIP!");
+                        Console.ForegroundColor = ConsoleColor.Yellow;
+                        Console.WriteLine("SKIP!");
+                        Console.ForegroundColor = ConsoleColor.Gray;
                         continue;
                     }
                 }
@@ -109,54 +128,42 @@ namespace AngryMonkey
                 OK();
             }
 
-            string jsonString = JsonConvert.SerializeObject(searches,
-                                                            searches.GetType(),
-                                                            Formatting.None,
-                                                            new JsonSerializerSettings
-                                                            {
-                                                                StringEscapeHandling = StringEscapeHandling.EscapeHtml
-                                                            })
-                                           //.Replace("{.w-100}", "")
-                                           //.Replace("{.w-75}", "")
-                                           //.Replace("{.w-50}", "")
-                                           //.Replace("{.w-25}", "")
-                                           //.Replace("{.TIP}", "")
-                                           //.Replace("{.NOTE}", "")
-                                           //.Replace("{.WARNING}", "")
-                                           //.Replace("{.val}", "")
-                                           .Replace("  ", "")
-                                           .Replace("|", "")
-                                           .Replace("`", "")
-                                           .Replace("--", "")
-                                           .Replace("\\u0022", "")
-                                           .Replace("\\u0027", "'")
-                                           //!STOP
-                                           //.Replace(" is ", " ")
-                                           //.Replace(" that ", " ")
-                                           //.Replace(" a ", " ")
-                                           //.Replace(" an ", " ")
-                                           //.Replace(" for ", " ")
-                                           //.Replace(" this ", " ")
-                                           //.Replace(" some ", " ")
-                                           //.Replace(" other ", " ")
-                                           //.Replace(" be ", " ")
-                                           //.Replace(" to ", " ")
-                                           //.Replace(" it ", " ")
-                                           //.Replace(" from ", " ")
-                                           //.Replace(" can ", " ")
-                                           //.Replace(" else ", " ")
-                                           //.Replace(" with ", " ")
-                                           //.Replace(" as ", " ")
-                                           .Replace("  ", " ")
-                                           .Replace("  ", " ")
-                                           .Replace("\\n", " ")
-                                           .Replace("\n", "");
+            if (searches.Count != 0)
+            {
+                Console.Write("Search updated...");
+                string jsonString = JsonConvert.SerializeObject(searches,
+                                                             searches.GetType(),
+                                                             Formatting.None,
+                                                             new JsonSerializerSettings
+                                                             {
+                                                                 StringEscapeHandling = StringEscapeHandling.EscapeHtml
+                                                             })
 
+                                            //.Replace("{.w-100}", "")
+                                            //.Replace("{.w-75}", "")
+                                            //.Replace("{.w-50}", "")
+                                            //.Replace("{.w-25}", "")
+                                            //.Replace("{.TIP}", "")
+                                            //.Replace("{.NOTE}", "")
+                                            //.Replace("{.WARNING}", "")
+                                            //.Replace("{.val}", "")
+                                            .Replace("  ", "")
+                                            .Replace("|", "")
+                                            .Replace("`", "")
+                                            .Replace("--", "")
+                                            .Replace("\\u0022", "")
+                                            .Replace("\\u0027", "'")
 
+                                            //!STOP
+                                            .Replace("\\n", " ")
+                                            .Replace("\n", "");
 
-            File.WriteAllText(Nav.RootPath + "docs\\search.json", jsonString);
+                File.WriteAllText(Nav.RootPath + "docs\\search.json", jsonString);
+                OK();
+            }
             Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine("The monkey is happy!\nGENERATION COMPLETE");
+            Console.WriteLine("\n\nTHE MONKEY IS HAPPY!");
+            Console.ForegroundColor = ConsoleColor.Gray;
         }
 
         private static bool MapIdentifiers()
@@ -207,9 +214,13 @@ namespace AngryMonkey
                 if (!bad)
                 {
                     OK();
+                    Console.ForegroundColor = ConsoleColor.Yellow;
                     Console.Write(Nav.identifiers.Count.ToString());
+                    Console.ForegroundColor = ConsoleColor.Gray;
                     Console.WriteLine(" unique identifiers.");
+                    Console.ForegroundColor = ConsoleColor.Yellow;
                     Console.Write(Nav.identifiers.Count(n => !n.Show).ToString());
+                    Console.ForegroundColor = ConsoleColor.Gray;
                     Console.WriteLine(" hidden identifiers.");
                 }
             }
@@ -220,7 +231,7 @@ namespace AngryMonkey
         private static void OK()
         {
             Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine("OK");
+            Console.WriteLine("OK!");
             Console.ForegroundColor = ConsoleColor.Gray;
         }
 

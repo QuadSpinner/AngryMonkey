@@ -52,11 +52,6 @@ namespace AngryMonkey
 
             }
 
-            if (md.ToLower().Contains("index.md"))
-            {
-                n.Show = false;
-            }
-
             n.Link = Uri.EscapeUriString(ReplaceNumbers(n.Link.Replace(RootPath + "source", string.Empty).Replace("\\", "/").Replace(".md", ".html")));
 
             return n;
