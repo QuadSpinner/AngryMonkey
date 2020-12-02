@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Web;
 using AngryMonkey.Objects;
 using Newtonsoft.Json;
 using WebMarkupMin.Core;
@@ -12,6 +11,12 @@ namespace AngryMonkey
 {
     public partial class Processor2
     {
+        private const string paramIdentifier = ".params.";
+        private const string mainTemplate = "template";
+        private const string skipPrefix = "_";
+        private Dictionary<string, string> hashes = new Dictionary<string, string>();
+
+        public Hive2[] hives;
         public Dictionary<string, string> includes = new Dictionary<string, string>();
 
         public Dictionary<string, List<Link>> links = new Dictionary<string, List<Link>>();
@@ -19,13 +24,15 @@ namespace AngryMonkey
         public Dictionary<string, Page> pages = new Dictionary<string, Page>();
 
         public Dictionary<string, string> templates = new Dictionary<string, string>();
-        private Dictionary<string, string> hashes = new Dictionary<string, string>();
 
-        public Hive2[] hives;
-
-        private const string paramIdentifier = ".params.";
-        private const string mainTemplate = "template";
-        private const string skipPrefix = "_";
+        public Processor2()
+        {
+            minifier = new HtmlMinifier(new HtmlMinificationSettings(true)
+                                        {
+                                            MinifyInlineJsCode = true,
+                                            WhitespaceMinificationMode = WhitespaceMinificationMode.Medium
+                                        });
+        }
 
         public string Source { get; set; }
 
@@ -33,27 +40,14 @@ namespace AngryMonkey
 
         public bool Force { get; set; }
 
-
-        public Processor2()
-        {
-            minifier = new HtmlMinifier(new HtmlMinificationSettings(true)
-            {
-                MinifyInlineJsCode = true,
-                WhitespaceMinificationMode = WhitespaceMinificationMode.Medium
-            });
-
-        }
-
         public void Process()
         {
-            Write("", true);
-
             hives = JsonConvert.DeserializeObject<Hive2[]>(File.ReadAllText(Source + "\\hives.json"));
 
             LoadHashes();
             InitializeTemplates();
             Directory.CreateDirectory(Destination);
-            Write("", true);
+
             ProcessHives();
 
             SaveHashes();
@@ -98,7 +92,9 @@ namespace AngryMonkey
                 hashes["_template"] = md5templates;
             }
             else
-            { hashes.Add("_template", md5templates); }
+            {
+                hashes.Add("_template", md5templates);
+            }
 
             if (hashes.ContainsKey("_includes"))
             {
@@ -108,15 +104,26 @@ namespace AngryMonkey
                 hashes["_includes"] = md5includes;
             }
             else
-            { hashes.Add("_includes", md5includes); }
+            {
+                hashes.Add("_includes", md5includes);
+            }
 
             OK();
         }
 
         public void ProcessHives()
         {
+            Write("", true);
             foreach (Hive2 hive in hives)
             {
+                // Preprocess XML changelogs
+                if (hive.ProcessXmlChangelogs)
+                {
+                    Write("   Changelogs...");
+                    PreprocessChangelogs($"{Source}\\{hive.Path}");
+                    OK();
+                }
+
                 Write($"   {hive.Title}...");
 
                 // Create hive data
@@ -124,19 +131,60 @@ namespace AngryMonkey
                 CreateNavigation(hive);
                 OK();
             }
-            Write("", true);
-            Write("   Processing ");
+
+            Write("\n   Processing ");
             Write(pages.Count.ToString("000"), false, ConsoleColor.Yellow);
             Write(" pages...");
             ProcessPages();
             OK();
-            Write("", true);
-            Write($"   {(counter)}", false, ConsoleColor.Cyan);
+
+            if (counter > 0)
+            {
+                Write("\n   Creating search index...", false, ConsoleColor.DarkCyan);
+                ProcessSearch();
+                OK();
+            }
+
+            Write($"\n   {counter}", false, ConsoleColor.Cyan);
             Write(" pages updated.", true);
             Write("\n", true);
 
             Write("   The monkey is happy! Ooo ooo ooo aahh ahh!", true, ConsoleColor.Green);
             Write("\n", true);
+        }
+
+        private void ProcessSearch()
+        {
+            List<SearchObject> searches = new List<SearchObject>();
+
+            foreach ((string _, Page page) in pages)
+            {
+                searches.Add(page.ToSearchObject());
+            }
+
+            if (searches.Count != 0)
+            {
+                string jsonString = JsonConvert.SerializeObject(searches,
+                                                                searches.GetType(),
+                                                                Formatting.None,
+                                                                new JsonSerializerSettings
+                                                                {
+                                                                    StringEscapeHandling =
+                                                                        StringEscapeHandling.EscapeHtml
+                                                                })
+                                               .Replace("  ", "")
+                                               .Replace("|", "")
+                                               .Replace("`", "")
+                                               .Replace("--", "")
+                                               .Replace("\\u0022", "")
+                                               .Replace("\\u0027", "'")
+
+                                               //!STOP
+                                               .Replace("\\n", " ")
+                                               .Replace("\n", "");
+
+                File.WriteAllText($"{Destination}\\search.json", jsonString);
+            }
         }
 
         public void GetPages(Hive2 hive)
@@ -156,10 +204,11 @@ namespace AngryMonkey
                 List<Link> folderLinks = new List<Link>();
 
                 // Get a usable folder name string
-                string folderName = Strip(folder.Trim(Path.DirectorySeparatorChar).Split(Path.DirectorySeparatorChar).Last());
+                string folderName =
+                    Strip(folder.Trim(Path.DirectorySeparatorChar).Split(Path.DirectorySeparatorChar).Last());
 
                 // Create link for the parent that all pages in this folder will share
-                Link parent = new Link { Href = folderName, Title = folderName };
+                Link parent = new Link {Href = folderName, Title = folderName};
 
                 string[] files = Directory.GetFiles(folder, "*.md");
 
@@ -173,7 +222,7 @@ namespace AngryMonkey
                     Page page = AddPage(hive, file, parent);
 
                     if (!page.Hidden)
-                        folderLinks.Add(new Link { Href = page.Href, Title = page.Title });
+                        folderLinks.Add(new Link {Href = page.Href, Title = page.Title});
                 }
 
                 links.Add(folderName, folderLinks);
@@ -198,16 +247,16 @@ namespace AngryMonkey
 
             // Construct the page
             Page page = new Page
-            {
-                Hive = hive,
-                Filename = file,
-                Parent = parent,
-                Contents = markdown,
-                Title = yaml["title"],
-                UID = yaml["uid"],
-                Hidden = yaml.ContainsKey("show") && yaml["show"] == "no" || file.ToLower().Contains("index.html")
-            };
-
+                        {
+                            Hive = hive,
+                            Filename = file,
+                            Parent = parent,
+                            Contents = markdown,
+                            Title = yaml["title"],
+                            UID = yaml["uid"],
+                            Hidden = yaml.ContainsKey("show") && yaml["show"] == "no" ||
+                                     file.ToLower().Contains("index.html")
+                        };
 
             // If there is a secondary 'parameters' file, load and append it using the PARAMS template fragment
             if (hive.ProcessProceduralFiles)
@@ -245,7 +294,8 @@ namespace AngryMonkey
 
             // Save the navigation fragment for Ajax loading later
             Directory.CreateDirectory($"{Destination}\\Navs\\");
-            File.WriteAllText($"{Destination}\\Navs\\{hive.Path}-n.html", minifier.Minify(navHtml.ToString()).MinifiedContent);
+            File.WriteAllText($"{Destination}\\Navs\\{hive.Path}-n.html",
+                              minifier.Minify(navHtml.ToString()).MinifiedContent);
         }
     }
 }

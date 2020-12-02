@@ -11,7 +11,7 @@ namespace AngryMonkey.Objects
     {
         public string Title { get; set; }
 
-        public string Href =>  $"/{Hive.Path}/{Parent.Href}/{Strip(Path.GetFileNameWithoutExtension(Filename))}.html";
+        public string Href =>  $"/{Hive.Path}/{(string.IsNullOrEmpty(Parent.Href) ? string.Empty : Parent.Href + "/")}{Strip(Path.GetFileNameWithoutExtension(Filename))}.html";
 
         public string Filename { get; set; }
 
@@ -54,6 +54,7 @@ namespace AngryMonkey.Objects
                                 .Replace(":", string.Empty)
                                 .Replace("!", string.Empty)
                                 .Replace("`", string.Empty)
+                                .Replace("@", string.Empty)
                                 .Replace(".", " ")
                                 .Replace("  ", " ")
                                 .Replace(" an ", " ")
