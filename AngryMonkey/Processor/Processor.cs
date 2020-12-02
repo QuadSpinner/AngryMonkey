@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using AngryMonkey.Objects;
 using Newtonsoft.Json;
@@ -32,6 +33,8 @@ namespace AngryMonkey
                                             MinifyInlineJsCode = true,
                                             WhitespaceMinificationMode = WhitespaceMinificationMode.Medium
                                         });
+
+            Write("\n   AngryMonkey " + Assembly.GetExecutingAssembly().GetName().Version, true, ConsoleColor.DarkCyan);
         }
 
         public string Source { get; set; }
@@ -147,9 +150,8 @@ namespace AngryMonkey
 
             Write($"\n   {counter}", false, ConsoleColor.Cyan);
             Write(" pages updated.", true);
-            Write("\n", true);
-
-            Write("   The monkey is happy! Ooo ooo ooo aahh ahh!", true, ConsoleColor.Green);
+       
+            Write("\n   The monkey is happy! Ooo ooo ooo aahh ahh!", true, ConsoleColor.Green);
             Write("\n", true);
         }
 

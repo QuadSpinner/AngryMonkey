@@ -7,12 +7,8 @@ namespace AngryMonkey
         private static void Main(string[] args)
         {
             Console.Title = "AngryMonkey";
-
-
-            string root = "Z:\\Git\\Gaea\\Gaea-Docs"; // Environment.CurrentDirectory; // Use current directory
-
-            //if (args.Length > 0 && args[1] != "--force")
-            //    root = args[1]; // Use path supplied in the arguments
+            
+            string root = Environment.CurrentDirectory; // Use current directory
 
             if (!root.EndsWith("\\"))
                 root = $"{root}\\";
@@ -23,11 +19,6 @@ namespace AngryMonkey
                 Destination = root + "docs",
                 Force = Environment.CommandLine.Contains("--force")
             }.Process();
-
-            //Nav.RootPath = root;
-
-            //Documenter doc = new Documenter();
-            //doc.ProcessHives();
         }
     }
 }
