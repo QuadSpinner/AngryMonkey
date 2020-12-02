@@ -11,7 +11,7 @@ using AngryMonkey.Objects;
 
 namespace AngryMonkey
 {
-    public partial class Processor2
+    public partial class Processor
     {
         private static MD5 md5 = MD5.Create();
 

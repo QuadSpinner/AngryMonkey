@@ -2,22 +2,14 @@
 {
     public class Hive
     {
-        public Hive(string path, NavItem nav, bool procedural = false, bool examples = false)
-        {
-            Path = path;
-            BaseItem = nav;
-            ProcessProceduralFiles = procedural;
-            ProcessExampleFiles = examples;
-        }
-
         public string Path { get; set; }
 
-        public NavItem BaseItem { get; set; }
+        public string Title { get; set; }
 
+        //! THE FOLLOWING ARE CUSTOM PROPERTIES.
+        //! You can remove them, along with their usages, or set them to false in your hives.
         public bool ProcessProceduralFiles { get; set; }
 
-        public bool ProcessExampleFiles { get; set; }
-
-        public bool ProcessTutorialFiles { get; set; }
+        public bool ProcessXmlChangelogs { get; set; }
     }
 }

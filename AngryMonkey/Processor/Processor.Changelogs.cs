@@ -16,7 +16,7 @@ using Gaea.Internals.Online;
 
 namespace AngryMonkey
 {
-    public partial class Processor2
+    public partial class Processor
     {
         private void PreprocessChangelogs(string dir)
         {

@@ -17,7 +17,7 @@ namespace AngryMonkey.Objects
 
         public string UID { get; set; }
 
-        public Hive2 Hive { get; set; }
+        public Hive Hive { get; set; }
 
         public Link Parent { get; set; }
 

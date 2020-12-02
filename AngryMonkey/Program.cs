@@ -17,7 +17,7 @@ namespace AngryMonkey
             if (!root.EndsWith("\\"))
                 root = $"{root}\\";
 
-            new Processor2
+            new Processor
             {
                 Source = root + "source",
                 Destination = root + "docs",
