@@ -48,16 +48,6 @@ namespace AngryMonkey
             return true;
         }        
         
-        private bool IsStale(string name, string contents)
-        {
-            if (hashes.ContainsKey(name))
-            {
-                return GetMD5(contents) != hashes[name];
-            }
-
-            return true;
-        }
-
         private void LoadHashes()
         {
             if (File.Exists(Source + "\\hash.bin"))

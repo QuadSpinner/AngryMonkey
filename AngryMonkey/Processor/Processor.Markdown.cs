@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Web;
+using System.Text;
 using AngryMonkey.Objects;
 using Markdig;
 using Markdig.Extensions.AutoIdentifiers;
@@ -20,7 +20,6 @@ namespace AngryMonkey
         {
             MarkdownPipeline pipeline = new MarkdownPipelineBuilder()
                                         .UsePipeTables(new PipeTableOptions { RequireHeaderSeparator = true })
-                                        .UseBootstrap()
                                         .UseYamlFrontMatter()
                                         .UseGenericAttributes()
                                         .UseAutoIdentifiers(AutoIdentifierOptions.GitHub)
@@ -40,20 +39,20 @@ namespace AngryMonkey
 
                 // Replace all @ references with links
                 ProcessLinks(ref pageContents);
-                
+
                 // Replace all ^ includes with fragment
                 ProcessIncludes(ref pageContents);
 
                 // Replace template elements and generate HTML from the markdown
-                string result = templates[mainTemplate].Replace("{{BODY}}", $"<p class=\"faux-h1\">{page.Title}</p>" + Markdown.ToHtml(pageContents, pipeline))
+                string result = templates[mainTemplate].Replace("{{BODY}}", Markdown.ToHtml(pageContents, pipeline))
                                                        .Replace("{{TITLE}}", page.Title)
                                                        .Replace("{{PARENT}}", page.Parent.Title)
                                                        .Replace("{{PARENT-HREF}}", page.Parent.Href)
-                                                       .Replace("{{HIVE-HREF}}", page.Hive.Path)
-                                                       .Replace("{{HIVE}}", page.Hive.Title);
+                                                       .Replace("{{HIVE-HREF}}", page.Hive?.Path)
+                                                       .Replace("{{HIVE}}", page.Hive?.Title);
 
                 // Save the file
-                File.WriteAllText(filename, result);
+                File.WriteAllText(filename, minifier.Minify(result).MinifiedContent);
 
                 // Add or update the hash
                 if (hashes.ContainsKey(page.Filename))
@@ -70,7 +69,7 @@ namespace AngryMonkey
             foreach ((string key, Page page) in pages)
             {
                 if (s.Contains($"@{key}"))
-                    s = s.Replace($"@{key}", $"[{page.Title}]({HttpUtility.UrlEncode(page.Href)})");
+                    s = s.Replace($"@{key}", $"[{page.Title}]({page.Href})");
             }
 
         }
@@ -91,7 +90,7 @@ namespace AngryMonkey
                 return null;
             }
 
-            Dictionary<string, string> yaml = new Dictionary<string, string>();
+            Dictionary<string, string> yaml = new();
             string[] lines = contents.Split('\n');
 
             foreach (string line in lines.Skip(1))
@@ -105,6 +104,41 @@ namespace AngryMonkey
             }
 
             return yaml;
+        }
+        public string MonkeyMagic(string contents)
+        {
+            string[] lines = contents.Split('\n');
+
+            StringBuilder sb = new();
+            bool first = false;
+            foreach (string line in lines)
+            {
+                if (line.StartsWith("#### "))
+                {
+                    if (!first)
+                    {
+                        first = true;
+                        sb.AppendLine("\n<div class=\"no example\">\n");
+                    }
+                    else
+                    {
+                        sb.AppendLine("\n</div><div class=\"no example\">\n");
+                    }
+                }
+
+                if (first && line.StartsWith("## "))
+                {
+                    first = false;
+                    sb.AppendLine("\n</div>\n");
+                }
+
+                sb.AppendLine(line);
+            }
+
+            if (first)
+                sb.AppendLine("</div>");
+
+            return sb.ToString();
         }
     }
 }

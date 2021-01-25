@@ -22,7 +22,7 @@ namespace AngryMonkey
         {
             string[] xmlFiles = Directory.GetFiles(dir, "*.update", SearchOption.AllDirectories);
 
-            XmlSerializer xs = new XmlSerializer(typeof(UpdateManifest));
+            XmlSerializer xs = new(typeof(UpdateManifest));
 
             foreach (string x in xmlFiles)
             {
@@ -41,7 +41,7 @@ namespace AngryMonkey
                 if (!Force && File.Exists(changelog))
                     continue;
 
-                StringBuilder md = new StringBuilder();
+                StringBuilder md = new();
 
                 md.AppendLine("---");
                 md.AppendLine("uid: gaea_" + versionSafe);

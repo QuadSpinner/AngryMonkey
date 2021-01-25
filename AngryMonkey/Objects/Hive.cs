@@ -11,5 +11,9 @@
         public bool ProcessProceduralFiles { get; set; }
 
         public bool ProcessXmlChangelogs { get; set; }
+
+        public bool ExcludeFromSearch { get; set; }
+
+        public int SearchWeight { get; set; } = 0;
     }
 }
